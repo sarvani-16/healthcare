@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}View Dataset - VitalSign{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="page-header">
+
+        <h2>
+            View Healthcare Dataset
+        </h2>
+
+        <p>
+            Patient records and dataset attributes.
+        </p>
+
+        <div class="red-line"></div>
+
+    </div>
+
+
+    <div class="stats-grid">
+
+        <div class="stat-card">
+
+            <div class="icon">
+                <i class="fa-solid fa-users"></i>
+            </div>
+
+            <h3>50,000</h3>
+
+            <p>Patients</p>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="icon">
+                <i class="fa-solid fa-table"></i>
+            </div>
+
+            <h3>50</h3>
+
+            <p>Features</p>
+
+        </div>
+
+    </div>
+
+
+    <br><br>
+
+
+    <div class="table-wrapper">
+
+        <table class="data-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Encounter ID</th>
+                    <th>Patient ID</th>
+                    <th>Gender</th>
+                    <th>Age</th>
+                    <th>Hospital Stay</th>
+                    <th>Medications</th>
+                    <th>Readmitted</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                <tr>
+
+                    <td>2278392</td>
+                    <td>8222157</td>
+                    <td>Female</td>
+                    <td>[0-10)</td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>NO</td>
+
+                </tr>
+
+
+                <tr>
+
+                    <td>149190</td>
+                    <td>556291</td>
+                    <td>Female</td>
+                    <td>[10-20)</td>
+                    <td>3</td>
+                    <td>18</td>
+                    <td>>30</td>
+
+                </tr>
+
+
+                <tr>
+
+                    <td>64410</td>
+                    <td>860478</td>
+                    <td>Female</td>
+                    <td>[20-30)</td>
+                    <td>2</td>
+                    <td>13</td>
+                    <td>NO</td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

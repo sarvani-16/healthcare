@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - VitalSign{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="page-header">
+
+        <h2>
+            Model Reports
+        </h2>
+
+        <p>
+            Machine learning performance
+            and healthcare prediction reports.
+        </p>
+
+        <div class="red-line"></div>
+
+    </div>
+
+
+    <div class="stats-grid">
+
+        <div class="stat-card">
+
+            <div class="icon">
+                <i class="fa-solid fa-bullseye"></i>
+            </div>
+
+            <h3>--</h3>
+
+            <p>Accuracy</p>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="icon">
+                <i class="fa-solid fa-crosshairs"></i>
+            </div>
+
+            <h3>--</h3>
+
+            <p>Precision</p>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="icon">
+                <i class="fa-solid fa-rotate"></i>
+            </div>
+
+            <h3>--</h3>
+
+            <p>Recall</p>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="icon">
+                <i class="fa-solid fa-chart-simple"></i>
+            </div>
+
+            <h3>--</h3>
+
+            <p>F1 Score</p>
+
+        </div>
+
+    </div>
+
+
+    <section class="section">
+
+        <div class="card">
+
+            <h3>
+                Classification Report
+            </h3>
+
+            <br>
+
+            <div class="table-wrapper">
+
+                <table class="data-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Model</th>
+
+                            <th>Accuracy</th>
+
+                            <th>Precision</th>
+
+                            <th>Recall</th>
+
+                            <th>F1 Score</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+
+                            <td>Logistic Regression</td>
+
+                            <td>--</td>
+
+                            <td>--</td>
+
+                            <td>--</td>
+
+                            <td>--</td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>Decision Tree</td>
+
+                            <td>--</td>
+
+                            <td>--</td>
+
+                            <td>--</td>
+
+                            <td>--</td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>Random Forest</td>
+
+                            <td>--</td>
+
+                            <td>--</td>
+
+                            <td>--</td>
+
+                            <td>--</td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

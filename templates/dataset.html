@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dataset - VitalSign
+{% endblock %}
+
+{% block page_name %}
+Patient Dataset
+{% endblock %}
+
+
+{% block content %}
+
+
+<div class="page-header">
+
+    <div>
+
+        <h1>
+            Healthcare Dataset
+        </h1>
+
+        <p>
+            Explore the diabetic patient dataset used by VitalSign.
+        </p>
+
+    </div>
+
+</div>
+
+
+
+<div class="stats-grid">
+
+    <div class="stat-card">
+
+        <div class="stat-label">
+            RECORDS
+        </div>
+
+        <div class="stat-value">
+            {{ total_records }}
+        </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+        <div class="stat-label">
+            FEATURES
+        </div>
+
+        <div class="stat-value">
+            {{ total_features }}
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<div class="card">
+
+    <div class="card-header">
+
+        <div>
+
+            <h2>
+                Dataset Preview
+            </h2>
+
+            <p>
+                First 100 patient records
+            </p>
+
+        </div>
+
+
+        <a href="{{ url_for('summary') }}"
+           class="btn btn-primary">
+
+            View Summary
+
+        </a>
+
+    </div>
+
+
+    {% if data %}
+
+        <div class="table-wrapper">
+
+            {{ data | safe }}
+
+        </div>
+
+    {% else %}
+
+        <div class="empty-state">
+
+            <div class="empty-state-icon">
+                ▤
+            </div>
+
+            <h3>
+                No Dataset Loaded
+            </h3>
+
+            <p>
+                Upload your healthcare CSV dataset to continue.
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+
+{% endblock %}

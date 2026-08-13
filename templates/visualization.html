@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Visualization - VitalSign{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="page-header">
+
+        <h2>
+            Data Visualization
+        </h2>
+
+        <p>
+            Explore healthcare data patterns
+            and relationships.
+        </p>
+
+        <div class="red-line"></div>
+
+    </div>
+
+
+    <div class="cards">
+
+
+        <div class="card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-chart-column"></i>
+            </div>
+
+            <h3>
+                Histograms
+            </h3>
+
+            <p>
+                Numerical feature distributions.
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-chart-bar"></i>
+            </div>
+
+            <h3>
+                Boxplots
+            </h3>
+
+            <p>
+                Identify feature spread and
+                possible outliers.
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-table-cells"></i>
+            </div>
+
+            <h3>
+                Correlation Heatmap
+            </h3>
+
+            <p>
+                Analyze relationships between
+                numerical healthcare features.
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-icon">
+                <i class="fa-solid fa-chart-pie"></i>
+            </div>
+
+            <h3>
+                Readmission Distribution
+            </h3>
+
+            <p>
+                Analyze the readmission
+                target classes.
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

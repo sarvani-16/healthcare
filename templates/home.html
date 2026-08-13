@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}
+Home - VitalSign
+{% endblock %}
+
+{% block page_name %}
+Overview
+{% endblock %}
+
+
+{% block content %}
+
+
+<!-- =====================================================
+     HERO
+===================================================== -->
+
+<section class="hero">
+
+    <div class="hero-content">
+
+        <span class="hero-badge">
+            ● MACHINE LEARNING HEALTHCARE PLATFORM
+        </span>
+
+        <h1>
+            Predict Hospital Readmission
+            Before It Happens
+        </h1>
+
+        <p>
+            VitalSign uses machine learning to analyze
+            diabetic patient records and estimate
+            hospital readmission risk.
+        </p>
+
+
+        <div class="hero-buttons">
+
+            <a href="{{ url_for('prediction') }}"
+               class="btn btn-white">
+
+                ✦ Start Prediction
+
+            </a>
+
+
+            <a href="{{ url_for('dashboard') }}"
+               class="btn btn-outline"
+               style="color:white;border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.08);">
+
+                View Dashboard
+
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     FEATURES
+===================================================== -->
+
+<div class="page-header">
+
+    <div>
+
+        <h1>
+            Healthcare Analytics
+        </h1>
+
+        <p>
+            Everything you need to analyze and predict patient
+            readmission risk.
+        </p>
+
+    </div>
+
+</div>
+
+
+<div class="feature-grid">
+
+
+    <div class="feature-card">
+
+        <div class="feature-icon">
+            ▤
+        </div>
+
+        <h3>
+            Patient Dataset
+        </h3>
+
+        <p>
+            Explore patient records, features,
+            missing values and duplicate records.
+        </p>
+
+        <br>
+
+        <a href="{{ url_for('dataset') }}"
+           class="btn btn-outline">
+
+            Explore Dataset
+
+        </a>
+
+    </div>
+
+
+
+    <div class="feature-card">
+
+        <div class="feature-icon">
+            ⚙
+        </div>
+
+        <h3>
+            Data Preprocessing
+        </h3>
+
+        <p>
+            Prepare healthcare data by handling
+            missing values and categorical features.
+        </p>
+
+        <br>
+
+        <a href="{{ url_for('preprocessing') }}"
+           class="btn btn-outline">
+
+            Preprocess
+
+        </a>
+
+    </div>
+
+
+
+    <div class="feature-card">
+
+        <div class="feature-icon">
+            ◒
+        </div>
+
+        <h3>
+            Visual Analytics
+        </h3>
+
+        <p>
+            Discover relationships, distributions
+            and healthcare data patterns.
+        </p>
+
+        <br>
+
+        <a href="{{ url_for('visualization') }}"
+           class="btn btn-outline">
+
+            View Analytics
+
+        </a>
+
+    </div>
+
+
+
+    <div class="feature-card">
+
+        <div class="feature-icon">
+            ◆
+        </div>
+
+        <h3>
+            Machine Learning
+        </h3>
+
+        <p>
+            Train classification models and evaluate
+            their healthcare prediction performance.
+        </p>
+
+        <br>
+
+        <a href="{{ url_for('models') }}"
+           class="btn btn-outline">
+
+            View Models
+
+        </a>
+
+    </div>
+
+
+
+    <div class="feature-card">
+
+        <div class="feature-icon">
+            ✦
+        </div>
+
+        <h3>
+            Patient Prediction
+        </h3>
+
+        <p>
+            Enter patient information and estimate
+            the risk of hospital readmission.
+        </p>
+
+        <br>
+
+        <a href="{{ url_for('prediction') }}"
+           class="btn btn-primary">
+
+            Predict Risk
+
+        </a>
+
+    </div>
+
+
+
+    <div class="feature-card">
+
+        <div class="feature-icon">
+            ▣
+        </div>
+
+        <h3>
+            Reports
+        </h3>
+
+        <p>
+            Review model accuracy, classification
+            results and generated analytics.
+        </p>
+
+        <br>
+
+        <a href="{{ url_for('reports') }}"
+           class="btn btn-outline">
+
+            View Reports
+
+        </a>
+
+    </div>
+
+</div>
+
+
+{% endblock %}

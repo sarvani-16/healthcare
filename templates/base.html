@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        {% block title %}
+        VitalSign
+        {% endblock %}
+    </title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     SIDEBAR
+===================================================== -->
+
+<aside class="sidebar">
+
+    <div class="brand">
+
+        <div class="brand-icon">
+            ♥
+        </div>
+
+        <div>
+
+            <h2>VitalSign</h2>
+
+            <span>Healthcare AI</span>
+
+        </div>
+
+    </div>
+
+
+    <div class="sidebar-section">
+
+        <p class="sidebar-title">
+            MAIN
+        </p>
+
+
+        <a href="{{ url_for('home') }}"
+           class="side-link">
+
+            <span>⌂</span>
+
+            <span>Home</span>
+
+        </a>
+
+
+        <a href="{{ url_for('dashboard') }}"
+           class="side-link">
+
+            <span>▦</span>
+
+            <span>Dashboard</span>
+
+        </a>
+
+    </div>
+
+
+    <div class="sidebar-section">
+
+        <p class="sidebar-title">
+            DATA
+        </p>
+
+
+        <a href="{{ url_for('dataset') }}"
+           class="side-link">
+
+            <span>▤</span>
+
+            <span>Dataset</span>
+
+        </a>
+
+
+        <a href="{{ url_for('summary') }}"
+           class="side-link">
+
+            <span>▥</span>
+
+            <span>Summary</span>
+
+        </a>
+
+
+        <a href="{{ url_for('preprocessing') }}"
+           class="side-link">
+
+            <span>⚙</span>
+
+            <span>Preprocessing</span>
+
+        </a>
+
+
+        <a href="{{ url_for('visualization') }}"
+           class="side-link">
+
+            <span>◒</span>
+
+            <span>Visualization</span>
+
+        </a>
+
+    </div>
+
+
+    <div class="sidebar-section">
+
+        <p class="sidebar-title">
+            MACHINE LEARNING
+        </p>
+
+
+        <a href="{{ url_for('models') }}"
+           class="side-link">
+
+            <span>◆</span>
+
+            <span>ML Models</span>
+
+        </a>
+
+
+        <a href="{{ url_for('prediction') }}"
+           class="side-link prediction-link">
+
+            <span>✦</span>
+
+            <span>Prediction</span>
+
+        </a>
+
+
+        <a href="{{ url_for('reports') }}"
+           class="side-link">
+
+            <span>▣</span>
+
+            <span>Reports</span>
+
+        </a>
+
+    </div>
+
+
+    <div class="sidebar-section">
+
+        <p class="sidebar-title">
+            SYSTEM
+        </p>
+
+
+        <a href="{{ url_for('about') }}"
+           class="side-link">
+
+            <span>ⓘ</span>
+
+            <span>About</span>
+
+        </a>
+
+
+        <a href="{{ url_for('contact') }}"
+           class="side-link">
+
+            <span>✉</span>
+
+            <span>Contact</span>
+
+        </a>
+
+    </div>
+
+
+    <div class="sidebar-bottom">
+
+        <div class="health-status">
+
+            <span class="status-dot"></span>
+
+            <div>
+
+                <strong>System Online</strong>
+
+                <small>ML service ready</small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</aside>
+
+
+
+<!-- =====================================================
+     MAIN APPLICATION
+===================================================== -->
+
+<div class="app-container">
+
+
+    <!-- TOP BAR -->
+
+    <header class="topbar">
+
+        <div>
+
+            <span class="breadcrumb">
+                Healthcare /
+            </span>
+
+            <strong>
+                {% block page_name %}
+                Overview
+                {% endblock %}
+            </strong>
+
+        </div>
+
+
+        <div class="topbar-right">
+
+            <div class="notification">
+                ♢
+            </div>
+
+
+            <div class="profile">
+
+                <div class="profile-avatar">
+                    VS
+                </div>
+
+                <div>
+
+                    <strong>
+                        VitalSign
+                    </strong>
+
+                    <small>
+                        Healthcare ML
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- FLASH MESSAGES -->
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% if messages %}
+
+            <div class="flash-container">
+
+                {% for category, message in messages %}
+
+                    <div class="flash {{ category }}">
+
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+    {% endwith %}
+
+
+    <!-- PAGE -->
+
+    <main class="page">
+
+        {% block content %}
+
+        {% endblock %}
+
+    </main>
+
+
+</div>
+
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+
+</html>

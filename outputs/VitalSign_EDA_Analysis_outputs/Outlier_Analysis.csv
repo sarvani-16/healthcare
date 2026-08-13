@@ -1,0 +1,14 @@
+Column,Q1,Q3,IQR,Lower Limit,Upper Limit,Outlier Count
+encounter_id,50718952.5,116290402.5,65571450.0,-47638222.5,214647577.5,0
+patient_nbr,5755014.0,63263547.0,57508533.0,-80507785.5,149526346.5,0
+admission_type_id,1.0,3.0,2.0,-2.0,6.0,157
+discharge_disposition_id,1.0,5.0,4.0,-5.0,11.0,5839
+admission_source_id,1.0,7.0,6.0,-8.0,16.0,6236
+time_in_hospital,2.0,6.0,4.0,-4.0,12.0,1275
+num_lab_procedures,30.0,56.0,26.0,-9.0,95.0,86
+num_procedures,0.0,2.0,2.0,-3.0,5.0,2081
+num_medications,10.0,19.0,9.0,-3.5,32.5,1831
+number_outpatient,0.0,0.0,0.0,0.0,0.0,5548
+number_emergency,0.0,0.0,0.0,0.0,0.0,3781
+number_inpatient,0.0,1.0,1.0,-1.5,2.5,3091
+number_diagnoses,5.0,9.0,4.0,-1.0,15.0,0

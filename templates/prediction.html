@@ -1,0 +1,344 @@
+{% extends "base.html" %}
+
+{% block title %}
+Prediction - VitalSign
+{% endblock %}
+
+{% block page_name %}
+Patient Prediction
+{% endblock %}
+
+
+{% block content %}
+
+
+<div class="page-header">
+
+    <div>
+
+        <h1>
+            Patient Readmission Prediction
+        </h1>
+
+        <p>
+            Enter patient information to estimate hospital readmission risk.
+        </p>
+
+    </div>
+
+</div>
+
+
+
+<div class="content-grid">
+
+
+    <!-- =================================================
+         PATIENT FORM
+    ================================================= -->
+
+    <div class="form-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h2>
+                    Patient Information
+                </h2>
+
+                <p>
+                    Enter the patient's clinical information.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form method="POST">
+
+
+            <div class="form-grid">
+
+
+                <div class="form-group">
+
+                    <label>
+                        Age
+                    </label>
+
+                    <select name="age">
+
+                        <option>[0-10)</option>
+                        <option>[10-20)</option>
+                        <option>[20-30)</option>
+                        <option>[30-40)</option>
+                        <option>[40-50)</option>
+                        <option>[50-60)</option>
+                        <option>[60-70)</option>
+                        <option>[70-80)</option>
+                        <option>[80-90)</option>
+                        <option>[90-100)</option>
+
+                    </select>
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label>
+                        Gender
+                    </label>
+
+                    <select name="gender">
+
+                        <option>Male</option>
+
+                        <option>Female</option>
+
+                    </select>
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label>
+                        Time in Hospital
+                    </label>
+
+                    <input
+                        type="number"
+                        name="time_in_hospital"
+                        min="1"
+                        max="20"
+                        placeholder="Example: 4"
+                        required>
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label>
+                        Number of Lab Procedures
+                    </label>
+
+                    <input
+                        type="number"
+                        name="num_lab_procedures"
+                        min="0"
+                        placeholder="Example: 40">
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label>
+                        Number of Procedures
+                    </label>
+
+                    <input
+                        type="number"
+                        name="num_procedures"
+                        min="0"
+                        placeholder="Example: 2">
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label>
+                        Number of Medications
+                    </label>
+
+                    <input
+                        type="number"
+                        name="num_medications"
+                        min="0"
+                        placeholder="Example: 15">
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label>
+                        Number of Outpatient Visits
+                    </label>
+
+                    <input
+                        type="number"
+                        name="number_outpatient"
+                        min="0"
+                        placeholder="Example: 1">
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label>
+                        Number of Emergency Visits
+                    </label>
+
+                    <input
+                        type="number"
+                        name="number_emergency"
+                        min="0"
+                        placeholder="Example: 0">
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label>
+                        Number of Inpatient Visits
+                    </label>
+
+                    <input
+                        type="number"
+                        name="number_inpatient"
+                        min="0"
+                        placeholder="Example: 1">
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label>
+                        Number of Diagnoses
+                    </label>
+
+                    <input
+                        type="number"
+                        name="number_diagnoses"
+                        min="0"
+                        placeholder="Example: 7">
+
+                </div>
+
+
+                <div class="form-group full">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary">
+
+                        ✦ Predict Readmission Risk
+
+                    </button>
+
+                </div>
+
+
+            </div>
+
+        </form>
+
+
+        {% if result %}
+
+        <div class="prediction-result">
+
+            <h2>
+                {{ result }}
+            </h2>
+
+            <p>
+                Prediction generated by the VitalSign machine learning system.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+
+    <!-- =================================================
+         INFORMATION CARD
+    ================================================= -->
+
+    <div class="card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h2>
+                    Prediction Guide
+                </h2>
+
+                <p>
+                    About this assessment
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="feature-card">
+
+            <div class="feature-icon">
+                ♥
+            </div>
+
+            <h3>
+                What is being predicted?
+            </h3>
+
+            <p>
+                The system estimates whether a diabetic
+                patient is likely to be readmitted to the
+                hospital.
+            </p>
+
+        </div>
+
+
+        <br>
+
+
+        <div class="feature-card">
+
+            <div class="feature-icon">
+                ⚕
+            </div>
+
+            <h3>
+                Healthcare Decision Support
+            </h3>
+
+            <p>
+                This project is designed for educational
+                machine learning analysis and should not
+                replace professional medical judgment.
+            </p>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Preprocessing - VitalSign{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="page-header">
+
+        <h2>
+            Data Preprocessing
+        </h2>
+
+        <p>
+            Prepare patient data for machine
+            learning.
+        </p>
+
+        <div class="red-line"></div>
+
+    </div>
+
+
+    <div class="cards">
+
+
+        <div class="card">
+
+            <div class="card-icon">
+
+                <i class="fa-solid fa-magnifying-glass"></i>
+
+            </div>
+
+            <h3>
+                Missing Value Analysis
+            </h3>
+
+            <p>
+                Identify and handle missing
+                healthcare attributes.
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-icon">
+
+                <i class="fa-solid fa-code"></i>
+
+            </div>
+
+            <h3>
+                Encoding
+            </h3>
+
+            <p>
+                Convert categorical healthcare
+                variables into numerical values.
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-icon">
+
+                <i class="fa-solid fa-scale-balanced"></i>
+
+            </div>
+
+            <h3>
+                Normalization
+            </h3>
+
+            <p>
+                Normalize numerical attributes
+                for model training.
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-icon">
+
+                <i class="fa-solid fa-filter"></i>
+
+            </div>
+
+            <h3>
+                Feature Selection
+            </h3>
+
+            <p>
+                Select relevant healthcare
+                features for prediction.
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

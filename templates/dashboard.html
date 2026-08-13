@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dashboard - VitalSign
+{% endblock %}
+
+{% block page_name %}
+Dashboard
+{% endblock %}
+
+
+{% block content %}
+
+
+<div class="page-header">
+
+    <div>
+
+        <h1>
+            Healthcare Dashboard
+        </h1>
+
+        <p>
+            Overview of your healthcare dataset and machine learning system.
+        </p>
+
+    </div>
+
+
+    <a href="{{ url_for('prediction') }}"
+       class="btn btn-primary">
+
+        ✦ New Prediction
+
+    </a>
+
+</div>
+
+
+
+<!-- =====================================================
+     STATISTICS
+===================================================== -->
+
+<div class="stats-grid">
+
+
+    <div class="stat-card">
+
+        <div class="stat-top">
+
+            <span class="stat-label">
+                PATIENT RECORDS
+            </span>
+
+            <div class="stat-icon">
+                👤
+            </div>
+
+        </div>
+
+        <div class="stat-value">
+            {{ total_records }}
+        </div>
+
+        <div class="stat-description">
+            Healthcare encounters available
+        </div>
+
+    </div>
+
+
+
+    <div class="stat-card">
+
+        <div class="stat-top">
+
+            <span class="stat-label">
+                FEATURES
+            </span>
+
+            <div class="stat-icon">
+                ▦
+            </div>
+
+        </div>
+
+        <div class="stat-value">
+            {{ total_features }}
+        </div>
+
+        <div class="stat-description">
+            Patient attributes in dataset
+        </div>
+
+    </div>
+
+
+
+    <div class="stat-card">
+
+        <div class="stat-top">
+
+            <span class="stat-label">
+                MISSING VALUES
+            </span>
+
+            <div class="stat-icon">
+                ⚠
+            </div>
+
+        </div>
+
+        <div class="stat-value">
+            {{ missing_values }}
+        </div>
+
+        <div class="stat-description">
+            Values requiring preprocessing
+        </div>
+
+    </div>
+
+
+
+    <div class="stat-card">
+
+        <div class="stat-top">
+
+            <span class="stat-label">
+                DUPLICATES
+            </span>
+
+            <div class="stat-icon">
+                ◈
+            </div>
+
+        </div>
+
+        <div class="stat-value">
+            {{ duplicate_records }}
+        </div>
+
+        <div class="stat-description">
+            Duplicate patient records
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =====================================================
+     DASHBOARD CONTENT
+===================================================== -->
+
+<div class="content-grid">
+
+
+    <div class="card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h2>
+                    Healthcare ML Workflow
+                </h2>
+
+                <p>
+                    End-to-end patient prediction process
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="feature-grid">
+
+
+            <div class="feature-card">
+
+                <div class="feature-icon">
+                    01
+                </div>
+
+                <h3>
+                    Dataset
+                </h3>
+
+                <p>
+                    Load and inspect diabetic patient records.
+                </p>
+
+            </div>
+
+
+            <div class="feature-card">
+
+                <div class="feature-icon">
+                    02
+                </div>
+
+                <h3>
+                    Preprocess
+                </h3>
+
+                <p>
+                    Clean missing and categorical data.
+                </p>
+
+            </div>
+
+
+            <div class="feature-card">
+
+                <div class="feature-icon">
+                    03
+                </div>
+
+                <h3>
+                    Train Model
+                </h3>
+
+                <p>
+                    Train a classification model.
+                </p>
+
+            </div>
+
+
+            <div class="feature-card">
+
+                <div class="feature-icon">
+                    04
+                </div>
+
+                <h3>
+                    Predict
+                </h3>
+
+                <p>
+                    Estimate patient readmission risk.
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+
+    <div class="card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h2>
+                    Model Status
+                </h2>
+
+                <p>
+                    Current ML service
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if model_accuracy %}
+
+            <div class="prediction-result">
+
+                <h2>
+                    {{ model_accuracy }}%
+                </h2>
+
+                <p>
+                    Current Model Accuracy
+                </p>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-state-icon">
+                    ◆
+                </div>
+
+                <strong>
+                    Model Not Trained
+                </strong>
+
+                <p>
+                    Train a model to see its performance.
+                </p>
+
+                <br>
+
+                <a href="{{ url_for('models') }}"
+                   class="btn btn-primary">
+
+                    Train Model
+
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+{% endblock %}
