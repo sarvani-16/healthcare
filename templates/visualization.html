@@ -1,100 +1,135 @@
 {% extends "base.html" %}
 
-{% block title %}Visualization - VitalSign{% endblock %}
+{% block title %}Visualizations - VitalSign{% endblock %}
+
+{% block page_name %}Visual Clinical Analytics{% endblock %}
 
 {% block content %}
 
-<div class="container">
-
-    <div class="page-header">
-
-        <h2>
-            Data Visualization
-        </h2>
-
-        <p>
-            Explore healthcare data patterns
-            and relationships.
-        </p>
-
-        <div class="red-line"></div>
-
+<div class="page-header">
+    <div>
+        <h1>Exploratory & Evaluative Visual Analytics</h1>
+        <p>Clinical distribution patterns, demographic trends, and model diagnostic charts</p>
     </div>
 
+    <div>
+        <a href="{{ url_for('prediction') }}" class="btn btn-primary" style="text-decoration: none;">
+            Test Patient Prediction →
+        </a>
+    </div>
+</div>
 
-    <div class="cards">
+<!-- ================= CHARTS GRID ================= -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 24px;">
 
-
-        <div class="card">
-
-            <div class="card-icon">
-                <i class="fa-solid fa-chart-column"></i>
-            </div>
-
-            <h3>
-                Histograms
-            </h3>
-
-            <p>
-                Numerical feature distributions.
-            </p>
-
+    <!-- 1. Readmission Distribution -->
+    <div class="card">
+        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 12px;">1. Target Readmission Distribution</h3>
+        <div style="background: #f8fafc; border-radius: 8px; padding: 10px; text-align: center;">
+            <img src="{{ url_for('static', filename='charts/readmission_distribution.png') }}" alt="Readmission Distribution" style="max-width: 100%; height: auto; border-radius: 6px;">
         </div>
+        <p style="font-size: 13px; color: #475569; margin-top: 12px; line-height: 1.6;">
+            <strong>Interpretation:</strong> Displays the distribution across original labels. Exactly 5,743 encounters (11.49%) resulted in 30-day readmissions (Class 1), while 44,257 encounters (88.51%) had no readmission or readmission after 30 days (Class 0).
+        </p>
+    </div>
 
-
-        <div class="card">
-
-            <div class="card-icon">
-                <i class="fa-solid fa-chart-bar"></i>
-            </div>
-
-            <h3>
-                Boxplots
-            </h3>
-
-            <p>
-                Identify feature spread and
-                possible outliers.
-            </p>
-
+    <!-- 2. Age Distribution -->
+    <div class="card">
+        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 12px;">2. Patient Age Distribution</h3>
+        <div style="background: #f8fafc; border-radius: 8px; padding: 10px; text-align: center;">
+            <img src="{{ url_for('static', filename='charts/age_distribution.png') }}" alt="Age Distribution" style="max-width: 100%; height: auto; border-radius: 6px;">
         </div>
+        <p style="font-size: 13px; color: #475569; margin-top: 12px; line-height: 1.6;">
+            <strong>Interpretation:</strong> The majority of diabetic patient admissions occur within elderly age brackets (60–70, 70–80, and 50–60 years). Older patients show elevated susceptibility to comorbid complications and higher readmission risk.
+        </p>
+    </div>
 
-
-        <div class="card">
-
-            <div class="card-icon">
-                <i class="fa-solid fa-table-cells"></i>
-            </div>
-
-            <h3>
-                Correlation Heatmap
-            </h3>
-
-            <p>
-                Analyze relationships between
-                numerical healthcare features.
-            </p>
-
+    <!-- 3. Gender Distribution -->
+    <div class="card">
+        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 12px;">3. Patient Gender Breakdown</h3>
+        <div style="background: #f8fafc; border-radius: 8px; padding: 10px; text-align: center;">
+            <img src="{{ url_for('static', filename='charts/gender_distribution.png') }}" alt="Gender Distribution" style="max-width: 100%; height: auto; border-radius: 6px;">
         </div>
+        <p style="font-size: 13px; color: #475569; margin-top: 12px; line-height: 1.6;">
+            <strong>Interpretation:</strong> Female patients represent ~53.8% of admissions and male patients ~46.2%, demonstrating a balanced representation across cohorts with no significant single-gender sampling skew.
+        </p>
+    </div>
 
-
-        <div class="card">
-
-            <div class="card-icon">
-                <i class="fa-solid fa-chart-pie"></i>
-            </div>
-
-            <h3>
-                Readmission Distribution
-            </h3>
-
-            <p>
-                Analyze the readmission
-                target classes.
-            </p>
-
+    <!-- 4. Race Distribution -->
+    <div class="card">
+        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 12px;">4. Racial & Ethnic Demographics</h3>
+        <div style="background: #f8fafc; border-radius: 8px; padding: 10px; text-align: center;">
+            <img src="{{ url_for('static', filename='charts/race_distribution.png') }}" alt="Race Distribution" style="max-width: 100%; height: auto; border-radius: 6px;">
         </div>
+        <p style="font-size: 13px; color: #475569; margin-top: 12px; line-height: 1.6;">
+            <strong>Interpretation:</strong> Caucasian patients represent the largest segment, followed by African American patients, Hispanic, Asian, and other groups, with 2.5% unknown/missing values imputed during pipeline processing.
+        </p>
+    </div>
 
+    <!-- 5. Admission Type Distribution -->
+    <div class="card">
+        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 12px;">5. Admission Type Breakdown</h3>
+        <div style="background: #f8fafc; border-radius: 8px; padding: 10px; text-align: center;">
+            <img src="{{ url_for('static', filename='charts/admission_type_distribution.png') }}" alt="Admission Type Distribution" style="max-width: 100%; height: auto; border-radius: 6px;">
+        </div>
+        <p style="font-size: 13px; color: #475569; margin-top: 12px; line-height: 1.6;">
+            <strong>Interpretation:</strong> Emergency admissions constitute the primary route of entry for acute diabetic decompensation, followed by urgent and elective inpatient encounters.
+        </p>
+    </div>
+
+    <!-- 6. Discharge Disposition Distribution -->
+    <div class="card">
+        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 12px;">6. Discharge Destinations</h3>
+        <div style="background: #f8fafc; border-radius: 8px; padding: 10px; text-align: center;">
+            <img src="{{ url_for('static', filename='charts/discharge_disposition_distribution.png') }}" alt="Discharge Disposition" style="max-width: 100%; height: auto; border-radius: 6px;">
+        </div>
+        <p style="font-size: 13px; color: #475569; margin-top: 12px; line-height: 1.6;">
+            <strong>Interpretation:</strong> Routine discharge to home is most prevalent, followed by transfers to skilled nursing facilities (SNF) and home healthcare services, which correlate with higher clinical acuity.
+        </p>
+    </div>
+
+    <!-- 7. Correlation Heatmap -->
+    <div class="card" style="grid-column: 1 / -1;">
+        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 12px;">7. Numerical Feature Correlation Matrix</h3>
+        <div style="background: #f8fafc; border-radius: 8px; padding: 10px; text-align: center;">
+            <img src="{{ url_for('static', filename='charts/correlation_heatmap.png') }}" alt="Correlation Heatmap" style="max-width: 100%; height: auto; border-radius: 6px;">
+        </div>
+        <p style="font-size: 13px; color: #475569; margin-top: 12px; line-height: 1.6;">
+            <strong>Interpretation:</strong> Moderate positive correlation between length of stay (<code>time_in_hospital</code>) and <code>num_medications</code> (0.47), as well as between prior <code>number_inpatient</code> admissions and subsequent readmission events.
+        </p>
+    </div>
+
+    <!-- 8. Confusion Matrix -->
+    <div class="card">
+        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 12px;">8. Test Set Confusion Matrix (Random Forest)</h3>
+        <div style="background: #f8fafc; border-radius: 8px; padding: 10px; text-align: center;">
+            <img src="{{ url_for('static', filename='charts/confusion_matrix.png') }}" alt="Confusion Matrix" style="max-width: 100%; height: auto; border-radius: 6px;">
+        </div>
+        <p style="font-size: 13px; color: #475569; margin-top: 12px; line-height: 1.6;">
+            <strong>Interpretation:</strong> Shows true positives, false positives, true negatives, and false negatives evaluated on the holdout test set (10,000 encounters) with balanced class weights.
+        </p>
+    </div>
+
+    <!-- 9. ROC Curve -->
+    <div class="card">
+        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 12px;">9. Receiver Operating Characteristic (ROC) Curve</h3>
+        <div style="background: #f8fafc; border-radius: 8px; padding: 10px; text-align: center;">
+            <img src="{{ url_for('static', filename='charts/roc_curve.png') }}" alt="ROC Curve" style="max-width: 100%; height: auto; border-radius: 6px;">
+        </div>
+        <p style="font-size: 13px; color: #475569; margin-top: 12px; line-height: 1.6;">
+            <strong>Interpretation:</strong> Plots Sensitivity against False Positive Rate across all decision thresholds, demonstrating discriminatory power superior to random baseline.
+        </p>
+    </div>
+
+    <!-- 10. Feature Importance -->
+    <div class="card" style="grid-column: 1 / -1;">
+        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 12px;">10. Top 20 Predictive Clinical Features</h3>
+        <div style="background: #f8fafc; border-radius: 8px; padding: 10px; text-align: center;">
+            <img src="{{ url_for('static', filename='charts/feature_importance.png') }}" alt="Feature Importance" style="max-width: 100%; height: auto; border-radius: 6px;">
+        </div>
+        <p style="font-size: 13px; color: #475569; margin-top: 12px; line-height: 1.6;">
+            <strong>Interpretation:</strong> Identifies the highest-weighted predictive indicators in the Random Forest ensemble: laboratory procedure volume, medication counts, length of stay, inpatient admission history, and specific diagnostic codes.
+        </p>
     </div>
 
 </div>

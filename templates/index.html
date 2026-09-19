@@ -1,22 +1,184 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>VitalSign</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
+{% extends "base.html" %}
 
-<div class="container">
+{% block title %}VitalSign - Healthcare Readmission Prediction System{% endblock %}
 
-    <h1>VitalSign</h1>
+{% block page_name %}Overview{% endblock %}
 
-    <h3>Healthcare Readmission Prediction</h3>
+{% block content %}
 
-    <a href="/dataset"><button>View Dataset</button></a>
+<!-- =====================================================
+     HERO SECTION
+===================================================== -->
+<section class="hero">
+    <div class="hero-content">
+        <span class="hero-badge">
+            ● AI-POWERED HEALTHCARE ANALYTICS
+        </span>
 
-    <a href="/predict"><button>Predict Patient</button></a>
+        <h1>VitalSign</h1>
+        <h2 style="font-size: 22px; font-weight: 500; opacity: 0.9; margin: 10px 0 16px;">
+            Healthcare Readmission Prediction System
+        </h2>
 
+        <p style="max-width: 650px; font-size: 15px; opacity: 0.88; line-height: 1.6; margin-bottom: 24px;">
+            VitalSign is an educational machine learning platform that analyzes the UCI Diabetes 130-US Hospitals dataset (50,000 clinical records) to predict whether a diabetic patient is likely to be readmitted within 30 days of discharge.
+        </p>
+
+        <!-- 3 Required Action Buttons -->
+        <div class="hero-buttons" style="display: flex; gap: 14px; flex-wrap: wrap;">
+            <a href="{{ url_for('dataset') }}" class="btn btn-white" style="text-decoration: none; padding: 12px 24px; font-weight: 600; border-radius: 8px;">
+                ▤ View Dataset
+            </a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline" style="text-decoration: none; padding: 12px 24px; font-weight: 600; border-radius: 8px; color: white; border: 1px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.1);">
+                ▦ Explore Dashboard
+            </a>
+            <a href="{{ url_for('prediction') }}" class="btn" style="text-decoration: none; padding: 12px 24px; font-weight: 600; border-radius: 8px; background: #0ea5e9; color: white;">
+                ✦ Predict Readmission
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- =====================================================
+     EDUCATIONAL DISCLAIMER BANNER
+===================================================== -->
+<div class="card" style="background: #eff6ff; border-left: 4px solid #2563eb; margin-bottom: 28px; padding: 16px 20px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 22px;">ℹ️</span>
+        <div>
+            <strong style="color: #1e3a8a; font-size: 14px;">Educational Machine Learning Platform:</strong>
+            <p style="color: #1e40af; font-size: 13px; margin: 2px 0 0;">
+                This application is an educational machine learning prediction system and is not a medical diagnosis tool. Please consult a qualified healthcare professional for medical decisions.
+            </p>
+        </div>
+    </div>
 </div>
 
-</body>
-</html>
+<!-- =====================================================
+     PROJECT WORKFLOW SECTION
+===================================================== -->
+<div class="page-header" style="margin-bottom: 20px;">
+    <div>
+        <h2 style="font-size: 22px; font-weight: 800; color: #0f172a;">Project Workflow Architecture</h2>
+        <p style="color: #64748b; font-size: 13px;">End-to-end healthcare machine learning pipeline execution</p>
+    </div>
+</div>
+
+<div class="workflow-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 36px;">
+    <div class="card" style="text-align: center; padding: 24px 16px; border-top: 3px solid #3b82f6;">
+        <div style="font-size: 28px; margin-bottom: 10px;">1. 📊</div>
+        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a;">Dataset</h3>
+        <p style="font-size: 12px; color: #64748b; margin-top: 6px;">
+            50,000 encounters from UCI Diabetes repository across 130 US hospitals.
+        </p>
+        <div style="margin-top: 14px;">
+            <span class="badge" style="background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-size: 11px;">50 Features</span>
+        </div>
+    </div>
+
+    <div class="card" style="text-align: center; padding: 24px 16px; border-top: 3px solid #0ea5e9;">
+        <div style="font-size: 28px; margin-bottom: 10px;">2. ⚙️</div>
+        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a;">Preprocessing</h3>
+        <p style="font-size: 12px; color: #64748b; margin-top: 6px;">
+            Missing symbol handling, target formulation (&lt;30d), and OneHot encoding.
+        </p>
+        <div style="margin-top: 14px;">
+            <span class="badge" style="background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-size: 11px;">ColumnTransformer</span>
+        </div>
+    </div>
+
+    <div class="card" style="text-align: center; padding: 24px 16px; border-top: 3px solid #10b981;">
+        <div style="font-size: 28px; margin-bottom: 10px;">3. 📈</div>
+        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a;">EDA Analysis</h3>
+        <p style="font-size: 12px; color: #64748b; margin-top: 6px;">
+            Demographic, clinical distribution, and correlation heatmaps.
+        </p>
+        <div style="margin-top: 14px;">
+            <span class="badge" style="background: #d1fae5; color: #065f46; padding: 4px 8px; border-radius: 4px; font-size: 11px;">7 Clinical Charts</span>
+        </div>
+    </div>
+
+    <div class="card" style="text-align: center; padding: 24px 16px; border-top: 3px solid #8b5cf6;">
+        <div style="font-size: 28px; margin-bottom: 10px;">4. 🧠</div>
+        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a;">Model Training</h3>
+        <p style="font-size: 12px; color: #64748b; margin-top: 6px;">
+            Comparing Logistic Regression, Decision Tree, and Random Forest.
+        </p>
+        <div style="margin-top: 14px;">
+            <span class="badge" style="background: #ede9fe; color: #5b21b6; padding: 4px 8px; border-radius: 4px; font-size: 11px;">F1-Score Selection</span>
+        </div>
+    </div>
+
+    <div class="card" style="text-align: center; padding: 24px 16px; border-top: 3px solid #f59e0b;">
+        <div style="font-size: 28px; margin-bottom: 10px;">5. 🩺</div>
+        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a;">Prediction</h3>
+        <p style="font-size: 12px; color: #64748b; margin-top: 6px;">
+            Real-time inference with probability output and 3-tier clinical risk index.
+        </p>
+        <div style="margin-top: 14px;">
+            <span class="badge" style="background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 4px; font-size: 11px;">Low/Mod/High Risk</span>
+        </div>
+    </div>
+</div>
+
+<!-- =====================================================
+     MODULE EXPLORATION GRID
+===================================================== -->
+<div class="page-header" style="margin-bottom: 20px;">
+    <div>
+        <h2 style="font-size: 22px; font-weight: 800; color: #0f172a;">Explore VitalSign Modules</h2>
+        <p style="color: #64748b; font-size: 13px;">Direct navigation to system components and reports</p>
+    </div>
+</div>
+
+<div class="feature-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+    <div class="feature-card">
+        <div class="feature-icon">▤</div>
+        <h3>Patient Dataset</h3>
+        <p>Explore raw clinical encounter data, feature dimensions, missing value reports, and top record previews.</p>
+        <br>
+        <a href="{{ url_for('dataset') }}" class="btn btn-outline">Explore Dataset</a>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon">⚙</div>
+        <h3>Data Preprocessing</h3>
+        <p>Inspect missing value imputation, ColumnTransformer pipelines, feature encoding, and data sanitization.</p>
+        <br>
+        <a href="{{ url_for('preprocessing') }}" class="btn btn-outline">View Pipeline</a>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon">◒</div>
+        <h3>Visual Analytics</h3>
+        <p>Review comprehensive exploratory data analysis charts, demographics, clinical distributions, and correlation matrices.</p>
+        <br>
+        <a href="{{ url_for('visualization') }}" class="btn btn-outline">View Visualizations</a>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon">◆</div>
+        <h3>ML Model Comparison</h3>
+        <p>Evaluate comparative benchmarks across accuracy, precision, recall, F1-score, and ROC-AUC metrics.</p>
+        <br>
+        <a href="{{ url_for('models') }}" class="btn btn-outline">Compare Models</a>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon">✦</div>
+        <h3>Patient Prediction</h3>
+        <p>Input patient encounter information to compute personalized 30-day readmission probabilities and risk categories.</p>
+        <br>
+        <a href="{{ url_for('prediction') }}" class="btn btn-primary">Start Prediction</a>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon">▣</div>
+        <h3>Analytical Reports</h3>
+        <p>Access downloadable summary CSVs, full classification reports, confusion matrices, and audit logs.</p>
+        <br>
+        <a href="{{ url_for('reports') }}" class="btn btn-outline">View Reports</a>
+    </div>
+</div>
+
+{% endblock %}

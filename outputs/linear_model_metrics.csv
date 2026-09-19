@@ -1,0 +1,10 @@
+Task_Type,Model,Metric_1,Metric_2,Metric_3,Primary_Score,Notes
+Regression (Academic Demo: time_in_hospital),Linear Regression (OLS),MAE: 2.0431,MSE: 7.0796,RMSE: 2.6608,R2: 0.2591,Zeroed Coefs: 0/7
+Regression (Academic Demo: time_in_hospital),Ridge Regression (alpha=1.0),MAE: 2.0431,MSE: 7.0796,RMSE: 2.6608,R2: 0.2591,Zeroed Coefs: 0/7
+Regression (Academic Demo: time_in_hospital),Ridge Regression (alpha=10.0),MAE: 2.0431,MSE: 7.0796,RMSE: 2.6608,R2: 0.2591,Zeroed Coefs: 0/7
+Regression (Academic Demo: time_in_hospital),Lasso Regression (alpha=0.01),MAE: 2.0434,MSE: 7.0781,RMSE: 2.6605,R2: 0.2592,Zeroed Coefs: 0/7
+Regression (Academic Demo: time_in_hospital),Lasso Regression (alpha=0.1),MAE: 2.0554,MSE: 7.1199,RMSE: 2.6683,R2: 0.2548,Zeroed Coefs: 1/7
+Regression (Academic Demo: time_in_hospital),"Elastic Net (alpha=0.01, l1=0.5)",MAE: 2.0435,MSE: 7.0788,RMSE: 2.6606,R2: 0.2591,Zeroed Coefs: 0/7
+Regression (Academic Demo: time_in_hospital),"Elastic Net (alpha=0.1, l1=0.5)",MAE: 2.0508,MSE: 7.0964,RMSE: 2.6639,R2: 0.2573,Zeroed Coefs: 0/7
+Binary Classification (Readmission_30_Days),Binary Logistic Regression (balanced),Accuracy: 0.6705,Precision: 0.1782,Recall: 0.5170,F1: 0.2650,ROC-AUC: 0.6493
+Multiclass Classification (Original readmitted 3-tier),Multinomial Logistic Regression (multiclass='multinomial'),Accuracy: 0.5638,Weighted Precision: 0.5256,Weighted Recall: 0.5638,Weighted F1: 0.4847,"Classes: <30, >30, NO"

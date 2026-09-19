@@ -2,125 +2,105 @@
 
 {% block title %}View Dataset - VitalSign{% endblock %}
 
+{% block page_name %}Tabular Dataset Viewer{% endblock %}
+
 {% block content %}
 
-<div class="container">
-
-    <div class="page-header">
-
-        <h2>
-            View Healthcare Dataset
-        </h2>
-
-        <p>
-            Patient records and dataset attributes.
-        </p>
-
-        <div class="red-line"></div>
-
+<div class="page-header">
+    <div>
+        <h1>Clinical Records Browser</h1>
+        <p>Viewing 50 patient records per page from the UCI Diabetes dataset (50,000 total encounters)</p>
     </div>
 
+    <div style="display: flex; gap: 10px;">
+        <a href="{{ url_for('dataset') }}" class="btn btn-outline" style="text-decoration: none;">
+            ← Dataset Summary
+        </a>
+        <a href="{{ url_for('summary') }}" class="btn btn-primary" style="text-decoration: none;">
+            Download CSV Summary
+        </a>
+    </div>
+</div>
 
-    <div class="stats-grid">
-
-        <div class="stat-card">
-
-            <div class="icon">
-                <i class="fa-solid fa-users"></i>
-            </div>
-
-            <h3>50,000</h3>
-
-            <p>Patients</p>
-
-        </div>
-
-
-        <div class="stat-card">
-
-            <div class="icon">
-                <i class="fa-solid fa-table"></i>
-            </div>
-
-            <h3>50</h3>
-
-            <p>Features</p>
-
-        </div>
-
+<!-- ================= PAGINATION CONTROLS ================= -->
+<div class="card" style="margin-bottom: 20px; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+    <div style="font-size: 13px; color: #475569;">
+        Page <strong>{{ page }}</strong> of <strong>{{ total_pages }}</strong> (Showing records {{ (page-1)*50 + 1 }} to {{ [(page)*50, total_records]|min }} of {{ total_records }})
     </div>
 
+    <div style="display: flex; gap: 8px;">
+        {% if page > 1 %}
+        <a href="{{ url_for('view_dataset', page=1) }}" class="btn btn-outline" style="padding: 6px 12px; font-size: 12px; text-decoration: none;">&laquo; First</a>
+        <a href="{{ url_for('view_dataset', page=page-1) }}" class="btn btn-outline" style="padding: 6px 12px; font-size: 12px; text-decoration: none;">&lsaquo; Prev</a>
+        {% endif %}
 
-    <br><br>
+        <span style="padding: 6px 12px; font-size: 12px; background: #e2e8f0; border-radius: 6px; font-weight: 600;">{{ page }}</span>
 
+        {% if page < total_pages %}
+        <a href="{{ url_for('view_dataset', page=page+1) }}" class="btn btn-outline" style="padding: 6px 12px; font-size: 12px; text-decoration: none;">Next &rsaquo;</a>
+        <a href="{{ url_for('view_dataset', page=total_pages) }}" class="btn btn-outline" style="padding: 6px 12px; font-size: 12px; text-decoration: none;">Last &raquo;</a>
+        {% endif %}
+    </div>
+</div>
 
-    <div class="table-wrapper">
-
-        <table class="data-table">
-
-            <thead>
-
+<!-- ================= TABLE ================= -->
+<div class="card">
+    <div style="overflow-x: auto; max-width: 100%;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; white-space: nowrap;">
+            <thead style="background: #f1f5f9; border-bottom: 2px solid var(--border);">
                 <tr>
-
-                    <th>Encounter ID</th>
-                    <th>Patient ID</th>
-                    <th>Gender</th>
-                    <th>Age</th>
-                    <th>Hospital Stay</th>
-                    <th>Medications</th>
-                    <th>Readmitted</th>
-
+                    <th style="padding: 10px 12px;">Encounter</th>
+                    <th style="padding: 10px 12px;">Race</th>
+                    <th style="padding: 10px 12px;">Gender</th>
+                    <th style="padding: 10px 12px;">Age</th>
+                    <th style="padding: 10px 12px;">Admission ID</th>
+                    <th style="padding: 10px 12px;">Discharge ID</th>
+                    <th style="padding: 10px 12px;">Days in Hosp</th>
+                    <th style="padding: 10px 12px;">Labs</th>
+                    <th style="padding: 10px 12px;">Procedures</th>
+                    <th style="padding: 10px 12px;">Meds</th>
+                    <th style="padding: 10px 12px;">Emergencies</th>
+                    <th style="padding: 10px 12px;">Inpatients</th>
+                    <th style="padding: 10px 12px;">Diag 1</th>
+                    <th style="padding: 10px 12px;">Insulin</th>
+                    <th style="padding: 10px 12px;">Change</th>
+                    <th style="padding: 10px 12px;">Readmitted</th>
+                    <th style="padding: 10px 12px;">30-Day Target</th>
                 </tr>
-
             </thead>
-
-
             <tbody>
-
-                <tr>
-
-                    <td>2278392</td>
-                    <td>8222157</td>
-                    <td>Female</td>
-                    <td>[0-10)</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td>NO</td>
-
+                {% for row in rows %}
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <td style="padding: 10px 12px; font-weight: 600; color: #1e293b;">{{ row.encounter_id }}</td>
+                    <td style="padding: 10px 12px;">{{ row.race }}</td>
+                    <td style="padding: 10px 12px;">{{ row.gender }}</td>
+                    <td style="padding: 10px 12px;">{{ row.age }}</td>
+                    <td style="padding: 10px 12px;">{{ row.admission_type_id }}</td>
+                    <td style="padding: 10px 12px;">{{ row.discharge_disposition_id }}</td>
+                    <td style="padding: 10px 12px;">{{ row.time_in_hospital }}</td>
+                    <td style="padding: 10px 12px;">{{ row.num_lab_procedures }}</td>
+                    <td style="padding: 10px 12px;">{{ row.num_procedures }}</td>
+                    <td style="padding: 10px 12px;">{{ row.num_medications }}</td>
+                    <td style="padding: 10px 12px;">{{ row.number_emergency }}</td>
+                    <td style="padding: 10px 12px;">{{ row.number_inpatient }}</td>
+                    <td style="padding: 10px 12px;">{{ row.diag_1 }}</td>
+                    <td style="padding: 10px 12px;">{{ row.insulin }}</td>
+                    <td style="padding: 10px 12px;">{{ row.change }}</td>
+                    <td style="padding: 10px 12px;">
+                        <span class="badge" style="background: {% if row.readmitted == '<30' %}#fee2e2; color: #b91c1c;{% elif row.readmitted == '>30' %}#fef3c7; color: #92400e;{% else %}#f1f5f9; color: #475569;{% endif %}">
+                            {{ row.readmitted }}
+                        </span>
+                    </td>
+                    <td style="padding: 10px 12px;">
+                        <span class="badge" style="background: {% if row.Readmission_30_Days == 1 %}#fee2e2; color: #b91c1c;{% else %}#dcfce7; color: #15803d;{% endif %}">
+                            {{ row.Readmission_30_Days }}
+                        </span>
+                    </td>
                 </tr>
-
-
-                <tr>
-
-                    <td>149190</td>
-                    <td>556291</td>
-                    <td>Female</td>
-                    <td>[10-20)</td>
-                    <td>3</td>
-                    <td>18</td>
-                    <td>>30</td>
-
-                </tr>
-
-
-                <tr>
-
-                    <td>64410</td>
-                    <td>860478</td>
-                    <td>Female</td>
-                    <td>[20-30)</td>
-                    <td>2</td>
-                    <td>13</td>
-                    <td>NO</td>
-
-                </tr>
-
+                {% endfor %}
             </tbody>
-
         </table>
-
     </div>
-
 </div>
 
 {% endblock %}

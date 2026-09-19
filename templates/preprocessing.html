@@ -2,110 +2,112 @@
 
 {% block title %}Preprocessing - VitalSign{% endblock %}
 
+{% block page_name %}Data Preprocessing Pipeline{% endblock %}
+
 {% block content %}
 
-<div class="container">
+<div class="page-header">
+    <div>
+        <h1>Healthcare Data Preprocessing Pipeline</h1>
+        <p>Systematic sanitization, feature engineering, imputation, and encoding for clinical ML</p>
+    </div>
 
-    <div class="page-header">
+    <div>
+        <a href="{{ url_for('models') }}" class="btn btn-primary" style="text-decoration: none;">
+            View ML Models →
+        </a>
+    </div>
+</div>
 
-        <h2>
-            Data Preprocessing
-        </h2>
+<!-- ================= STEP-BY-STEP WORKFLOW ================= -->
+<div class="card" style="margin-bottom: 24px;">
+    <h3 style="font-size: 17px; font-weight: 700; color: #0f172a; margin-bottom: 16px;">Pipeline Architecture Steps</h3>
+    
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; gap: 14px; align-items: flex-start; padding: 12px; background: #f8fafc; border-radius: 8px;">
+            <div style="width: 32px; height: 32px; background: #2563eb; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">1</div>
+            <div>
+                <strong style="color: #0f172a; font-size: 14px;">Data Ingestion & Missing Symbol Normalization</strong>
+                <p style="color: #64748b; font-size: 13px; margin-top: 4px;">
+                    Loads 50,000 encounters with 50 attributes. Detects and substitutes UCI Diabetes missing value placeholder character <code>'?'</code> with standard NumPy <code>NaN</code>.
+                </p>
+            </div>
+        </div>
 
-        <p>
-            Prepare patient data for machine
-            learning.
+        <div style="display: flex; gap: 14px; align-items: flex-start; padding: 12px; background: #f8fafc; border-radius: 8px;">
+            <div style="width: 32px; height: 32px; background: #0ea5e9; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">2</div>
+            <div>
+                <strong style="color: #0f172a; font-size: 14px;">Target Formulation (Readmission_30_Days)</strong>
+                <p style="color: #64748b; font-size: 13px; margin-top: 4px;">
+                    Maps original multiclass <code>readmitted</code> (<code>&lt;30</code>, <code>&gt;30</code>, <code>NO</code>) into binary target: <strong>1</strong> for readmissions occurring within 30 days of discharge; <strong>0</strong> otherwise.
+                </p>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 14px; align-items: flex-start; padding: 12px; background: #f8fafc; border-radius: 8px;">
+            <div style="width: 32px; height: 32px; background: #ef4444; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">3</div>
+            <div>
+                <strong style="color: #0f172a; font-size: 14px;">Removal of Identifiers & Target Leakage Columns</strong>
+                <p style="color: #64748b; font-size: 13px; margin-top: 4px;">
+                    Drops <code>encounter_id</code>, <code>patient_nbr</code> (uninformative arbitrary keys), <code>weight</code> (96.3% missing), <code>payer_code</code> (65.3% missing administrative code), <code>medical_specialty</code> (35.5% missing/high cardinality), and the original <code>readmitted</code> column to prevent leakage.
+                </p>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 14px; align-items: flex-start; padding: 12px; background: #f8fafc; border-radius: 8px;">
+            <div style="width: 32px; height: 32px; background: #10b981; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">4</div>
+            <div>
+                <strong style="color: #0f172a; font-size: 14px;">Automated Numerical & Categorical Pipeline (ColumnTransformer)</strong>
+                <p style="color: #64748b; font-size: 13px; margin-top: 4px;">
+                    Numerical features are imputed with <code>SimpleImputer(strategy='median')</code>. Categorical features are imputed with <code>SimpleImputer(strategy='most_frequent')</code> and encoded via <code>OneHotEncoder(handle_unknown='ignore')</code>.
+                </p>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 14px; align-items: flex-start; padding: 12px; background: #f8fafc; border-radius: 8px;">
+            <div style="width: 32px; height: 32px; background: #8b5cf6; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">5</div>
+            <div>
+                <strong style="color: #0f172a; font-size: 14px;">Stratified Train-Test Partitioning</strong>
+                <p style="color: #64748b; font-size: 13px; margin-top: 4px;">
+                    Uses <code>train_test_split(test_size=0.2, random_state=42, stratify=y)</code> ensuring 40,000 training records and 10,000 testing records maintain exact 11.49% class proportion.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= FEATURE GROUPS ================= -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+    <div class="card">
+        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 12px;">🔢 11 Numerical Features (Median Imputed)</h3>
+        <ul style="list-style-type: square; margin-left: 20px; color: #475569; font-size: 13px; line-height: 1.8;">
+            <li><code>admission_type_id</code> (Emergency, Urgent, Elective)</li>
+            <li><code>discharge_disposition_id</code> (Home, SNF, Rehab)</li>
+            <li><code>admission_source_id</code> (Physician Referral, ER)</li>
+            <li><code>time_in_hospital</code> (1 to 14 days)</li>
+            <li><code>num_lab_procedures</code> (Total laboratory tests)</li>
+            <li><code>num_procedures</code> (Non-lab interventions)</li>
+            <li><code>num_medications</code> (Distinct active medications)</li>
+            <li><code>number_outpatient</code> (Outpatient visits preceding encounter)</li>
+            <li><code>number_emergency</code> (Emergency visits preceding encounter)</li>
+            <li><code>number_inpatient</code> (Inpatient admissions preceding encounter)</li>
+            <li><code>number_diagnoses</code> (Recorded clinical diagnoses)</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 12px;">🔤 33 Categorical Features (One-Hot Encoded)</h3>
+        <p style="font-size: 13px; color: #475569; margin-bottom: 8px;">
+            Imputed with most frequent class and transformed into binary dummy vectors:
         </p>
-
-        <div class="red-line"></div>
-
+        <ul style="list-style-type: square; margin-left: 20px; color: #475569; font-size: 13px; line-height: 1.8;">
+            <li>Demographics: <code>race</code>, <code>gender</code>, <code>age</code></li>
+            <li>ICD-9 Diagnoses: <code>diag_1</code>, <code>diag_2</code>, <code>diag_3</code></li>
+            <li>Laboratory Results: <code>max_glu_serum</code>, <code>A1Cresult</code></li>
+            <li>Medications: <code>metformin</code>, <code>repaglinide</code>, <code>nateglinide</code>, <code>chlorpropamide</code>, <code>glimepiride</code>, <code>acetohexamide</code>, <code>glipizide</code>, <code>glyburide</code>, <code>tolbutamide</code>, <code>pioglitazone</code>, <code>rosiglitazone</code>, <code>acarbose</code>, <code>miglitol</code>, <code>troglitazone</code>, <code>tolazamide</code>, <code>examide</code>, <code>citoglipton</code>, <code>insulin</code>, <code>glyburide_metformin</code>, <code>glipizide_metformin</code>, <code>glimepiride_pioglitazone</code>, <code>metformin_rosiglitazone</code>, <code>metformin_pioglitazone</code></li>
+            <li>Regimen Change & Status: <code>change</code>, <code>diabetesMed</code></li>
+        </ul>
     </div>
-
-
-    <div class="cards">
-
-
-        <div class="card">
-
-            <div class="card-icon">
-
-                <i class="fa-solid fa-magnifying-glass"></i>
-
-            </div>
-
-            <h3>
-                Missing Value Analysis
-            </h3>
-
-            <p>
-                Identify and handle missing
-                healthcare attributes.
-            </p>
-
-        </div>
-
-
-        <div class="card">
-
-            <div class="card-icon">
-
-                <i class="fa-solid fa-code"></i>
-
-            </div>
-
-            <h3>
-                Encoding
-            </h3>
-
-            <p>
-                Convert categorical healthcare
-                variables into numerical values.
-            </p>
-
-        </div>
-
-
-        <div class="card">
-
-            <div class="card-icon">
-
-                <i class="fa-solid fa-scale-balanced"></i>
-
-            </div>
-
-            <h3>
-                Normalization
-            </h3>
-
-            <p>
-                Normalize numerical attributes
-                for model training.
-            </p>
-
-        </div>
-
-
-        <div class="card">
-
-            <div class="card-icon">
-
-                <i class="fa-solid fa-filter"></i>
-
-            </div>
-
-            <h3>
-                Feature Selection
-            </h3>
-
-            <p>
-                Select relevant healthcare
-                features for prediction.
-            </p>
-
-        </div>
-
-    </div>
-
 </div>
 
 {% endblock %}

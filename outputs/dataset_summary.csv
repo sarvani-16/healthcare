@@ -1,0 +1,9 @@
+Metric,Value
+Total Records,50000
+Total Features,51
+Duplicate Records,0
+Total Missing Values (with ? as NaN),188908
+Target Column,Readmission_30_Days
+Class 1 (<30 Days Readmitted),5743
+Class 0 (No or >30 Days),44257
+Readmission Rate (%),11.49%

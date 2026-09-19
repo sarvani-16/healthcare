@@ -1,0 +1,25 @@
+# Python Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyCharm / IDE configurations
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Temporary uploads and test artifacts
+uploads/*
+!uploads/.gitkeep
+scratch/
+
+# Operating System Files
+.DS_Store
+Thumbs.db

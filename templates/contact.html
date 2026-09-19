@@ -2,96 +2,89 @@
 
 {% block title %}Contact - VitalSign{% endblock %}
 
+{% block page_name %}Project Information & Contact{% endblock %}
+
 {% block content %}
 
-<div class="container">
+<div class="page-header">
+    <div>
+        <h1>Project Information & Academic Contact</h1>
+        <p>VitalSign Healthcare Machine Learning Readmission Prediction System</p>
+    </div>
+</div>
 
-    <div class="page-header">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-bottom: 28px;">
 
-        <h2>
-            Contact Us
-        </h2>
+    <!-- 1. Project Information -->
+    <div class="card">
+        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 12px;">📌 Project Details</h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <tr style="border-bottom: 1px solid var(--border);">
+                <td style="padding: 8px 0; color: #64748b;">Project Title</td>
+                <td style="padding: 8px 0; text-align: right; font-weight: 600;">VitalSign / HealthcarePrediction</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border);">
+                <td style="padding: 8px 0; color: #64748b;">Domain</td>
+                <td style="padding: 8px 0; text-align: right; font-weight: 600;">Healthcare Clinical ML</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border);">
+                <td style="padding: 8px 0; color: #64748b;">Dataset</td>
+                <td style="padding: 8px 0; text-align: right; font-weight: 600;">UCI Diabetes 130-US Hospitals (50,000 Records)</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border);">
+                <td style="padding: 8px 0; color: #64748b;">Framework</td>
+                <td style="padding: 8px 0; text-align: right; font-weight: 600;">Python, Flask, Scikit-learn, Pandas</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 0; color: #64748b;">Production Model</td>
+                <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #2563eb;">Random Forest Classifier</td>
+            </tr>
+        </table>
+    </div>
 
-        <p>
-            Get in touch with the VitalSign team.
+    <!-- 2. Developer Section -->
+    <div class="card">
+        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 12px;">👨‍💻 Developer Information</h3>
+        <p style="font-size: 13px; color: #475569; line-height: 1.6;">
+            <strong>Developer:</strong> Manepalli Sarvani<br>
+            <strong>Role:</strong> Machine Learning & Full-Stack Developer<br>
+            <strong>IDE / Environment:</strong> JetBrains PyCharm / Python 3.14 (.venv)<br>
+            <strong>Application:</strong> VitalSign Healthcare Readmission Prediction System
         </p>
-
-        <div class="red-line"></div>
-
+        <div style="margin-top: 16px;">
+            <span class="badge" style="background: #dcfce7; color: #166534; font-weight: 600;">Active Development</span>
+        </div>
     </div>
 
-
-    <div class="form-container">
-
-        <div class="form-grid">
-
-
-            <div class="form-group">
-
-                <label>
-                    Name
-                </label>
-
-                <input type="text"
-                       placeholder="Enter your name">
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label>
-                    Email
-                </label>
-
-                <input type="email"
-                       placeholder="Enter your email">
-
-            </div>
-
-
-            <div class="form-group full">
-
-                <label>
-                    Subject
-                </label>
-
-                <input type="text"
-                       placeholder="Enter subject">
-
-            </div>
-
-
-            <div class="form-group full">
-
-                <label>
-                    Message
-                </label>
-
-                <textarea
-                    placeholder="Enter your message">
-                </textarea>
-
-            </div>
-
+    <!-- 3. Faculty / Project Guide Section Placeholder -->
+    <div class="card">
+        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 12px;">🎓 Academic & Faculty Guide</h3>
+        <p style="font-size: 13px; color: #475569; line-height: 1.6;">
+            <strong>Faculty Supervisor:</strong> [Faculty / Project Guide Name Placeholder]<br>
+            <strong>Department:</strong> Department of Computer Science & Engineering / Data Science<br>
+            <strong>Institution:</strong> [University / College Name Placeholder]<br>
+            <strong>Academic Year:</strong> 2025–2026
+        </p>
+        <div style="margin-top: 16px;">
+            <span class="badge" style="background: #e0f2fe; color: #0369a1; font-weight: 600;">Academic Capstone Project</span>
         </div>
-
-
-        <div style="text-align:center;
-                    margin-top:25px;">
-
-            <button class="btn btn-primary">
-
-                <i class="fa-solid fa-paper-plane"></i>
-
-                Send Message
-
-            </button>
-
-        </div>
-
     </div>
 
+</div>
+
+<!-- ================= PROMINENT EDUCATIONAL DISCLAIMER ================= -->
+<div class="card" style="background: #fef2f2; border: 1px solid #fecaca; padding: 22px;">
+    <div style="display: flex; gap: 14px; align-items: flex-start;">
+        <span style="font-size: 26px;">⚠️</span>
+        <div>
+            <p style="font-size: 13px; color: #7f1d1d; line-height: 1.6; font-weight: 600;">
+                “This application is an educational machine learning prediction system and is not a medical diagnosis tool. Please consult a qualified healthcare professional for medical decisions.”
+            </p>
+            <p style="font-size: 13px; color: #991b1b; margin-top: 8px; line-height: 1.6;">
+                The predictions, probabilities, and risk categorizations generated by VitalSign are derived strictly from statistical correlations within the UCI Diabetes historical dataset. They are designed for educational demonstrations, algorithmic research, and healthcare informatics learning. They must not be utilized for clinical triage, therapeutic decision-making, patient discharge determination, or independent diagnosis.
+            </p>
+        </div>
+    </div>
 </div>
 
 {% endblock %}

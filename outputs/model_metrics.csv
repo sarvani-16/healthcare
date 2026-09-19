@@ -1,0 +1,5 @@
+Model,Accuracy,Precision,Recall,F1_Score,ROC_AUC,Selected_Best
+LogisticRegression,0.6431,0.1687,0.5361,0.2566,0.6414,False
+DecisionTreeClassifier,0.6333,0.1748,0.5892,0.2697,0.6257,False
+AdaBoostClassifier,0.8848,0.4286,0.0078,0.0154,0.6701,False
+RandomForestClassifier,0.6373,0.1782,0.597,0.2745,0.6646,True

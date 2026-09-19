@@ -1,0 +1,2 @@
+Model,Accuracy,Precision,Recall,F1_Score,ROC_AUC,Holdout_Test_Records
+RandomForestClassifier,0.6373,0.1782,0.597,0.2745,0.6646,10000

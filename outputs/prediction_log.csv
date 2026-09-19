@@ -1,0 +1,11 @@
+timestamp,predicted_class,probability,risk_category,model_name,time_in_hospital,num_medications,num_lab_procedures,number_diagnoses,age_group,gender
+2026-09-15 15:19:06,0,0.18,Low Risk,RandomForestClassifier,2,8,25,4,[40-50),Male
+2026-09-15 15:19:06,1,0.54,Moderate Risk,RandomForestClassifier,7,24,65,9,[70-80),Female
+2026-09-15 15:19:06,1,0.78,High Risk,RandomForestClassifier,12,32,80,11,[80-90),Female
+2026-09-15 15:19:23,1,0.5831,Moderate Risk,RandomForestClassifier,6,21,54,9,[70-80),Female
+2026-09-19 20:51:37,1,0.5288,Moderate Risk,RandomForestClassifier,4,18,45,8,[60-70),Female
+2026-09-19 20:51:37,1,0.5288,Moderate Risk,RandomForestClassifier,4,18,45,8,[60-70),Female
+2026-09-19 21:01:47,0,0.18,Low Risk,RandomForestClassifier,2,8,25,4,[40-50),Male
+2026-09-19 21:01:47,1,0.54,Moderate Risk,RandomForestClassifier,7,24,65,9,[70-80),Female
+2026-09-19 21:01:47,1,0.78,High Risk,RandomForestClassifier,12,32,80,11,[80-90),Female
+2026-09-19 21:01:49,1,0.5831,Moderate Risk,RandomForestClassifier,6,21,54,9,[70-80),Female

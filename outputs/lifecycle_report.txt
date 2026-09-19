@@ -1,0 +1,91 @@
+================================================================================
+VITALSIGN HEALTHCARE MACHINE LEARNING SYSTEM LIFECYCLE REPORT
+Course Outcome 1 (CO1): End-to-End System Analysis & Prediction Trace
+Date Generated: 2026-09-19 21:01:49
+================================================================================
+
+1. COMPLETE 14-STAGE MACHINE LEARNING SYSTEM LIFECYCLE
+--------------------------------------------------------------------------------
+Stage 1: Raw Data Ingestion
+- Source: UCI Diabetes 130-US Hospitals Dataset (1999-2008).
+- Records: 50,000 clinical encounters across 130 US medical facilities.
+- Features: 50 raw attributes (demographics, diagnoses, lab procedures, medications).
+
+Stage 2: Data Cleaning & Standardisation
+- Missing Values: '?' indicators systematically mapped to standard NaN representations.
+- Identifier Removal: Encounter IDs and Patient Numbers dropped to prevent data leakage.
+- High-Missing Column Dropping: 'weight' (97% missing), 'payer_code' (40%), 'medical_specialty' (49%).
+
+Stage 3: Feature Engineering & Target Formulation
+- Binary Readmission Target: Readmission_30_Days formulated from 'readmitted' column:
+  * Class 1: Readmitted within 30 days (<30) -> High clinical priority (11.49% prevalence).
+  * Class 0: Readmitted after 30 days (>30) or No readmission (NO) -> 88.51%.
+
+Stage 4: Feature Selection
+- Predictor Matrix X: 44 clean clinical features retained.
+- Leakage Prevention: 'readmitted' target and patient identifiers strictly excluded.
+
+Stage 5: Train / Test Stratified Partitioning
+- Split Ratio: 80% Training (40,000 records) / 20% Holdout Testing (10,000 records).
+- Stratification: Class balance (11.49% Class 1) preserved identically in train and test splits.
+
+Stage 6: Production Preprocessing Pipeline
+- Numerical Sub-pipeline: SimpleImputer(strategy='median') for robust outlier tolerance.
+- Categorical Sub-pipeline: SimpleImputer(strategy='most_frequent') + OneHotEncoder(handle_unknown='ignore').
+- Artifact: Serialized into models/preprocessor.pkl for zero training-serving skew.
+
+Stage 7: Model Exploration & Training (CO2 & CO3)
+- Linear Models Evaluated: Linear Regression, Ridge, Lasso, Elastic Net, Binary & Multinomial Logistic Regression.
+- Tree-Based Ensembles: Decision Tree, Random Forest (100 trees), AdaBoost Classifier.
+- Class Weight Balancing: Employed balanced class weights to address minority target prevalence.
+
+Stage 8: Quantitative Evaluation & Benchmark Comparison
+- Evaluation Metrics: Accuracy, Precision, Recall, F1-Score, ROC-AUC.
+- Model Selection Criteria: F1-Score maximized on holdout test set to counter severe class imbalance.
+
+Stage 9: Model Serialization & Versioning
+- Artifact: Champion model saved to models/vitalsign_readmission_model.pkl.
+- Metadata: Column order, imputation medians, mode dictionaries saved to models/model_metadata.pkl.
+
+Stage 10: Web Service Deployment
+- Framework: Flask WSGI application (app.py) with 13 modular endpoints.
+- UI/UX: VitalSign medical design system (Teal/Dark Blue/White) with responsive tables and cards.
+
+Stage 11: Prediction Request Ingestion
+- Real-time HTTP POST ingestion via HTML Form (/prediction) and REST API (/api/predict).
+- Missing form fields automatically imputed using training metadata defaults.
+
+Stage 12: Inference & Risk Stratification
+- Probability Estimation: Continuous readmission probability generated via predict_proba().
+- Tiers: Low Risk (<30%), Moderate Risk (30%-59%), High Risk (>=60%).
+- Clinical Guidance: Specific post-discharge follow-up recommendations provided.
+
+Stage 13: MLOps Monitoring & Audit Trail
+- Continuous Logging: Every prediction transaction appended to outputs/prediction_log.csv.
+- Surveillance: Real-time risk distribution metrics tracking for early drift detection.
+
+Stage 14: Model Retraining Trigger
+- Web Trigger: Retrain button (/retrain) allowing automated pipeline re-execution on updated data.
+- Drift Thresholds: Scheduled retraining upon Population Stability Index (PSI) > 0.25.
+
+================================================================================
+2. TRACE OF A CONCRETE PREDICTION REQUEST THROUGH THE ARCHITECTURE
+================================================================================
+[Stage 1: User Input Received] User enters patient details: 20 fields submitted via Web UI.
+[Stage 2: Flask Ingestion & Validation] Flask POST route '/prediction' captures form data dictionary and validates types.
+[Stage 3: Feature Alignment] Aligned input against 44 training features; unprovided medications filled with learned defaults.
+[Stage 4: Pipeline Transformation] Executed ColumnTransformer (preprocessor.pkl): Imputation + One-Hot Encoding to ~2,000 sparse dimensions.
+[Stage 5: Champion Model Inference] RandomForestClassifier executed predict() and predict_proba(); Readmission Probability: 58.31%.
+[Stage 6: Risk Stratification] Probability 0.5831 mapped to 'Moderate Risk' (Threshold: >=0.60 High, 0.30-0.60 Moderate).
+[Stage 7: MLOps Audit Logging] Appended anonymized transaction to outputs/prediction_log.csv at 2026-09-19 21:01:49.
+
+Sample Prediction Assessment Output:
+- Predicted Outcome:      Readmitted within 30 Days
+- Readmission Probability:58.31%
+- Risk Classification:    Moderate Risk
+- Clinical Guidance:      Enhanced discharge planning and 14-day telemedicine check suggested.
+- Educational Disclaimer: This application is an educational prediction system and not a medical diagnosis tool. Please consult a qualified healthcare professional for medical decisions.
+
+================================================================================
+Report successfully compiled by VitalSign / HealthcarePrediction System.
+================================================================================
