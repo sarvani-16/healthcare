@@ -1,1453 +1,190 @@
-# ==============================================================
-# MULTINOMIAL LOGISTIC REGRESSION
-# SOFTMAX REGRESSION FOR MULTI-CLASS PLACEMENT PREDICTION
-#
-# IMPORTANT:
-# The original preprocessed dataset is NOT modified.
-# All output files are saved inside the "output" folder.
-# ==============================================================
+"""
+=============================================================================
+VITALSIGN: MULTINOMIAL LOGISTIC REGRESSION FOR 3-CLASS TARGET (M2)
+Dataset: UCI Diabetes 130-US Hospitals (diabetic_data_50000.csv)
+Target: readmitted (3-Class Categorical: 'NO', '>30', '<30')
+=============================================================================
 
+ML Concept - Multinomial Logistic Regression (Softmax Regression):
+Extends binary logistic regression to K > 2 mutually exclusive classes.
+The model calculates K linear functions and applies the Softmax function to
+obtain normalized class probabilities:
+    P(Y = k | X) = exp(beta_k^T * X) / sum_{j=1}^K exp(beta_j^T * X)
+
+CRITICAL ACADEMIC CONTEXT:
+This script provides an educational demonstration of multiclass categorization
+on the original 3 hospital discharge categories ('NO', '>30', '<30').
+The primary project and clinical policy target remains binary 30-day readmission.
+=============================================================================
+"""
 
 import os
-import warnings
-import joblib
-import numpy as np
+from pathlib import Path
 import pandas as pd
+import numpy as np
+
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
 from sklearn.linear_model import LogisticRegression
-
-
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.metrics import (
-   accuracy_score,
-   precision_score,
-   recall_score,
-   f1_score,
-   log_loss,
-   confusion_matrix,
-   classification_report
+    accuracy_score, precision_score, recall_score, f1_score,
+    classification_report, confusion_matrix
 )
 
-
-warnings.filterwarnings("ignore")
-
-
-
-
-# ==============================================================
-# 1. FILE SETTINGS
-# ==============================================================
-
-
-# Your ORIGINAL preprocessed dataset
-DATASET_FILE = "C:/Users/Manepalli Sarvani/PycharmProjects/placement_prediction/dataset/final_preprocess_M2.csv"
-
-
-# Target column
-# CHANGE ONLY THIS NAME if your target column has another name.
-TARGET_COLUMN = "CGPA_Tier"
-
-
-# All generated files will be stored here
-OUTPUT_FOLDER = "C:/Users/Manepalli Sarvani/PycharmProjects/placement_prediction/outputs/Multinomial_Logistic_Regre_for_Multiclass_M2"
-
-
-
-
-# ==============================================================
-# 2. CREATE OUTPUT FOLDER
-# ==============================================================
-
-
-os.makedirs(OUTPUT_FOLDER, exist_ok=True)
-
-
-
-
-print("=" * 75)
-print("MULTINOMIAL LOGISTIC REGRESSION")
-print("SOFTMAX REGRESSION - MULTI-CLASS PLACEMENT PREDICTION")
-print("=" * 75)
-
-
-
-
-# ==============================================================
-# 3. CHECK DATASET
-# ==============================================================
-
-
-if not os.path.exists(DATASET_FILE):
-
-
-   print("\nERROR: Dataset not found!")
-   print("Expected file:", DATASET_FILE)
-   print("\nPlace the CSV file in the same folder as main.py.")
-
-
-   exit()
-
-
-
-
-# ==============================================================
-# 4. READ DATASET
-# ==============================================================
-
-
-# IMPORTANT:
-# pd.read_csv() only READS the dataset.
-# Nothing is written back to the original dataset.
-
-
-df = pd.read_csv(DATASET_FILE)
-
-
-
-
-print("\nDataset loaded successfully.")
-
-
-print("Rows    :", df.shape[0])
-print("Columns :", df.shape[1])
-
-
-
-
-# ==============================================================
-# 5. KEEP ORIGINAL DATASET UNTOUCHED
-# ==============================================================
-
-
-# Create an in-memory copy.
-# All further operations are performed on copies.
-
-
-data = df.copy(deep=True)
-
-
-
-
-# ==============================================================
-# 6. DISPLAY DATASET
-# ==============================================================
-
-
-print("\n" + "=" * 75)
-print("PREPROCESSED DATASET")
-print("=" * 75)
-
-
-print("\nFirst 5 rows:")
-print(data.head())
-
-
-print("\nColumn names:")
-print(data.columns.tolist())
-
-
-print("\nData types:")
-print(data.dtypes)
-
-
-print("\nMissing values:")
-print(data.isnull().sum())
-
-
-
-
-# ==============================================================
-# 7. CHECK TARGET COLUMN
-# ==============================================================
-
-
-if TARGET_COLUMN not in data.columns:
-
-
-   print("\nERROR:")
-   print(
-       f"Target column '{TARGET_COLUMN}' does not exist."
-   )
-
-
-   print("\nAvailable columns:")
-   print(data.columns.tolist())
-
-
-   exit()
-
-
-
-
-print("\nTarget column:", TARGET_COLUMN)
-
-
-
-
-# ==============================================================
-# 8. CHECK NUMBER OF CLASSES
-# ==============================================================
-
-
-print("\n" + "=" * 75)
-print("TARGET CLASS DISTRIBUTION")
-print("=" * 75)
-
-
-class_counts = data[TARGET_COLUMN].value_counts()
-
-
-print(class_counts)
-
-
-number_of_classes = data[TARGET_COLUMN].nunique()
-
-
-print("\nNumber of classes:", number_of_classes)
-
-
-if number_of_classes < 3:
-
-
-   print(
-       "\nWARNING: The target has fewer than 3 classes."
-   )
-
-
-   print(
-       "This program is intended for a multi-class problem."
-   )
-
-
-
-
-# ==============================================================
-# 9. SAVE DATASET INFORMATION
-# ==============================================================
-# This creates a NEW file.
-# The original dataset is NOT changed.
-
-
-information_file = os.path.join(
-   OUTPUT_FOLDER,
-   "dataset_information.txt"
-)
-
-
-with open(
-   information_file,
-   "w",
-   encoding="utf-8"
-) as file:
-
-
-   file.write(
-       "PREPROCESSED PLACEMENT DATASET INFORMATION\n"
-   )
-
-
-   file.write("=" * 75 + "\n\n")
-
-
-   file.write(
-       f"Dataset file: {DATASET_FILE}\n"
-   )
-
-
-   file.write(
-       f"Rows: {data.shape[0]}\n"
-   )
-
-
-   file.write(
-       f"Columns: {data.shape[1]}\n"
-   )
-
-
-   file.write(
-       f"Target column: {TARGET_COLUMN}\n"
-   )
-
-
-   file.write(
-       f"Number of classes: {number_of_classes}\n"
-   )
-
-
-   file.write("\nColumn names:\n")
-
-
-   for column in data.columns:
-       file.write(f"- {column}\n")
-
-
-   file.write("\nData types:\n")
-   file.write(str(data.dtypes))
-
-
-   file.write("\n\nMissing values:\n")
-   file.write(str(data.isnull().sum()))
-
-
-   file.write("\n\nClass distribution:\n")
-   file.write(str(class_counts))
-
-
-
-
-# ==============================================================
-# 10. SEPARATE FEATURES AND TARGET
-# ==============================================================
-
-
-# Use a COPY of the data.
-# The original dataset remains unchanged.
-
-
-X = data.drop(
-   columns=[TARGET_COLUMN]
-).copy()
-
-
-y = data[TARGET_COLUMN].copy()
-
-
-
-
-# ==============================================================
-# 11. CHECK FEATURES
-# ==============================================================
-
-
-print("\n" + "=" * 75)
-print("FEATURE INFORMATION")
-print("=" * 75)
-
-
-print("\nFeature columns:")
-
-
-for column in X.columns:
-   print("-", column)
-
-
-
-
-print("\nNumber of features:", X.shape[1])
-
-
-
-
-# ==============================================================
-# 12. CHECK WHETHER FEATURES ARE NUMERICAL
-# ==============================================================
-
-
-non_numeric_columns = X.select_dtypes(
-   exclude=[np.number]
-).columns.tolist()
-
-
-
-
-if len(non_numeric_columns) > 0:
-
-
-   print("\nERROR:")
-   print(
-       "The dataset is expected to be already preprocessed."
-   )
-
-
-   print(
-       "\nThese columns are still non-numerical:"
-   )
-
-
-   for column in non_numeric_columns:
-       print("-", column)
-
-
-   print(
-       "\nPlease use the preprocessed dataset containing "
-       "numerical features."
-   )
-
-
-   exit()
-
-
-
-
-# ==============================================================
-# 13. CHECK MISSING VALUES
-# ==============================================================
-
-
-missing_values = X.isnull().sum().sum()
-
-
-
-
-if missing_values > 0:
-
-
-   print("\nERROR:")
-   print(
-       "Missing values were found in the preprocessed features."
-   )
-
-
-   print("\nMissing values by column:")
-   print(X.isnull().sum())
-
-
-   print(
-       "\nThe original dataset will NOT be modified."
-   )
-
-
-   print(
-       "Please use a properly preprocessed dataset."
-   )
-
-
-   exit()
-
-
-
-
-# ==============================================================
-# 14. ENCODE ONLY THE TARGET
-# ==============================================================
-
-
-# IMPORTANT:
-# We do NOT change the feature columns.
-#
-# LabelEncoder creates an internal numerical representation
-# of the target classes for model training.
-#
-# This does NOT modify the original CSV file.
-
-
-label_encoder = LabelEncoder()
-
-
-y_encoded = label_encoder.fit_transform(y)
-
-
-
-
-# ==============================================================
-# 15. CLASS MAPPING
-# ==============================================================
-
-
-class_names = label_encoder.classes_
-
-
-print("\n" + "=" * 75)
-print("CLASS MAPPING")
-print("=" * 75)
-
-
-for number, class_name in enumerate(class_names):
-
-
-   print(
-       f"{number} --> {class_name}"
-   )
-
-
-
-
-# ==============================================================
-# 16. TRAIN-TEST SPLIT
-# ==============================================================
-
-
-X_train, X_test, y_train, y_test = train_test_split(
-
-
-   X,
-   y_encoded,
-
-
-   test_size=0.20,
-
-
-   random_state=42,
-
-
-   stratify=y_encoded
-)
-
-
-
-
-print("\n" + "=" * 75)
-print("TRAIN-TEST SPLIT")
-print("=" * 75)
-
-
-print("\nTraining samples:", len(X_train))
-print("Testing samples :", len(X_test))
-
-
-print(
-   "\nTraining percentage:",
-   round(
-       len(X_train) / len(X) * 100,
-       2
-   ),
-   "%"
-)
-
-
-print(
-   "Testing percentage:",
-   round(
-       len(X_test) / len(X) * 100,
-       2
-   ),
-   "%"
-)
-
-
-
-
-# ==============================================================
-# 17. MULTINOMIAL LOGISTIC REGRESSION
-# ==============================================================
-
-
-print("\n" + "=" * 75)
-print("MULTINOMIAL LOGISTIC REGRESSION")
-print("=" * 75)
-
-
-model = LogisticRegression(
-
-    # Softmax / multinomial logistic regression
-    # lbfgs automatically handles the multi-class problem
-    solver="lbfgs",
-
-    max_iter=2000,
-
-    random_state=42
-)
-
-
-
-
-# ==============================================================
-# 18. TRAIN MODEL
-# ==============================================================
-
-
-print("\nTraining model...")
-
-
-model.fit(
-   X_train,
-   y_train
-)
-
-
-print("Model training completed successfully.")
-
-
-
-
-# ==============================================================
-# 19. PREDICT TEST DATA
-# ==============================================================
-
-
-y_pred = model.predict(
-   X_test
-)
-
-
-
-
-# ==============================================================
-# 20. SOFTMAX PROBABILITIES
-# ==============================================================
-
-
-# Probability assigned to every class
-
-
-y_probability = model.predict_proba(
-   X_test
-)
-
-
-
-
-# ==============================================================
-# 21. CALCULATE ACCURACY
-# ==============================================================
-
-
-accuracy = accuracy_score(
-   y_test,
-   y_pred
-)
-
-
-
-
-# ==============================================================
-# 22. CALCULATE PRECISION
-# ==============================================================
-
-
-precision = precision_score(
-
-
-   y_test,
-
-
-   y_pred,
-
-
-   average="weighted",
-
-
-   zero_division=0
-)
-
-
-
-
-# ==============================================================
-# 23. CALCULATE RECALL
-# ==============================================================
-
-
-recall = recall_score(
-
-
-   y_test,
-
-
-   y_pred,
-
-
-   average="weighted",
-
-
-   zero_division=0
-)
-
-
-
-
-# ==============================================================
-# 24. CALCULATE F1 SCORE
-# ==============================================================
-
-
-f1 = f1_score(
-
-
-   y_test,
-
-
-   y_pred,
-
-
-   average="weighted",
-
-
-   zero_division=0
-)
-
-
-
-
-# ==============================================================
-# 25. CALCULATE CROSS-ENTROPY LOSS
-# ==============================================================
-
-
-cross_entropy = log_loss(
-
-
-   y_test,
-
-
-   y_probability,
-
-
-   labels=np.arange(
-       number_of_classes
-   )
-)
-
-
-
-
-# ==============================================================
-# 26. PRINT MODEL RESULTS
-# ==============================================================
-
-
-print("\n" + "=" * 75)
-print("MODEL RESULTS")
-print("=" * 75)
-
-
-print(
-   f"\nAccuracy             : {accuracy:.4f}"
-)
-
-
-print(
-   f"Accuracy (%)         : {accuracy * 100:.2f}%"
-)
-
-
-print(
-   f"Precision (Weighted) : {precision:.4f}"
-)
-
-
-print(
-   f"Recall (Weighted)    : {recall:.4f}"
-)
-
-
-print(
-   f"F1 Score (Weighted)  : {f1:.4f}"
-)
-
-
-print(
-   f"Cross-Entropy Loss   : {cross_entropy:.4f}"
-)
-
-
-
-
-# ==============================================================
-# 27. CLASSIFICATION REPORT
-# ==============================================================
-
-
-report = classification_report(
-
-
-   y_test,
-
-
-   y_pred,
-
-
-   target_names=[
-       str(x)
-       for x in class_names
-   ],
-
-
-   zero_division=0
-)
-
-
-
-
-print("\n" + "=" * 75)
-print("CLASSIFICATION REPORT")
-print("=" * 75)
-
-
-print(report)
-
-
-
-
-# ==============================================================
-# 28. SAVE MODEL METRICS
-# ==============================================================
-
-
-metrics_file = os.path.join(
-
-
-   OUTPUT_FOLDER,
-
-
-   "model_metrics.txt"
-)
-
-
-
-
-with open(
-
-
-   metrics_file,
-
-
-   "w",
-
-
-   encoding="utf-8"
-
-
-) as file:
-
-
-   file.write(
-       "MULTINOMIAL LOGISTIC REGRESSION RESULTS\n"
-   )
-
-
-   file.write("=" * 75 + "\n\n")
-
-
-   file.write(
-       f"Dataset: {DATASET_FILE}\n"
-   )
-
-
-   file.write(
-       f"Target: {TARGET_COLUMN}\n"
-   )
-
-
-   file.write(
-       f"Number of classes: {number_of_classes}\n\n"
-   )
-
-
-   file.write("CLASS MAPPING\n")
-   file.write("-" * 40 + "\n")
-
-
-   for number, class_name in enumerate(class_names):
-
-
-       file.write(
-           f"{number} = {class_name}\n"
-       )
-
-
-   file.write("\nMODEL PERFORMANCE\n")
-   file.write("-" * 40 + "\n")
-
-
-   file.write(
-       f"Accuracy: {accuracy:.4f}\n"
-   )
-
-
-   file.write(
-       f"Accuracy (%): {accuracy * 100:.2f}%\n"
-   )
-
-
-   file.write(
-       f"Precision: {precision:.4f}\n"
-   )
-
-
-   file.write(
-       f"Recall: {recall:.4f}\n"
-   )
-
-
-   file.write(
-       f"F1 Score: {f1:.4f}\n"
-   )
-
-
-   file.write(
-       f"Cross-Entropy Loss: {cross_entropy:.4f}\n"
-   )
-
-
-   file.write("\nCLASSIFICATION REPORT\n")
-   file.write("-" * 40 + "\n")
-
-
-   file.write(report)
-
-
-
-
-# ==============================================================
-# 29. CONFUSION MATRIX
-# ==============================================================
-
-
-cm = confusion_matrix(
-
-
-   y_test,
-
-
-   y_pred,
-
-
-   labels=np.arange(
-       number_of_classes
-   )
-)
-
-
-
-
-plt.figure(
-   figsize=(8, 6)
-)
-
-
-
-
-sns.heatmap(
-
-
-   cm,
-
-
-   annot=True,
-
-
-   fmt="d",
-
-
-   cmap="Blues",
-
-
-   xticklabels=class_names,
-
-
-   yticklabels=class_names
-)
-
-
-
-
-plt.title(
-   "Confusion Matrix - Multinomial Logistic Regression"
-)
-
-
-plt.xlabel(
-   "Predicted Class"
-)
-
-
-plt.ylabel(
-   "Actual Class"
-)
-
-
-plt.tight_layout()
-
-
-
-
-plt.savefig(
-
-
-   os.path.join(
-       OUTPUT_FOLDER,
-       "confusion_matrix.png"
-   ),
-
-
-   dpi=300
-)
-
-
-
-
-plt.close()
-
-
-
-
-# ==============================================================
-# 30. CREATE PREDICTION OUTPUT
-# ==============================================================
-
-
-prediction_output = X_test.copy()
-
-
-
-
-# Add actual class
-
-
-prediction_output[
-   "Actual_Class"
-] = label_encoder.inverse_transform(
-   y_test
-)
-
-
-
-
-# Add predicted class
-
-
-prediction_output[
-   "Predicted_Class"
-] = label_encoder.inverse_transform(
-   y_pred
-)
-
-
-
-
-# Add correct/incorrect
-
-
-prediction_output[
-   "Correct"
-] = (
-   y_test == y_pred
-)
-
-
-
-
-# ==============================================================
-# 31. ADD SOFTMAX PROBABILITIES
-# ==============================================================
-
-
-for i, class_name in enumerate(class_names):
-
-
-   probability_column = (
-       "Probability_"
-       + str(class_name)
-       .replace(" ", "_")
-   )
-
-
-   prediction_output[
-       probability_column
-   ] = y_probability[:, i]
-
-
-
-
-# Save predictions
-
-
-prediction_output.to_csv(
-
-
-   os.path.join(
-       OUTPUT_FOLDER,
-       "predictions.csv"
-   ),
-
-
-   index=False
-)
-
-
-
-
-# ==============================================================
-# 32. SAVE SOFTMAX PROBABILITIES SEPARATELY
-# ==============================================================
-
-
-probability_output = pd.DataFrame(
-   y_probability
-)
-
-
-
-
-probability_output.columns = [
-
-
-   "Probability_"
-   + str(class_name)
-   .replace(" ", "_")
-
-
-   for class_name in class_names
-
-
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATASET_PATH = BASE_DIR / "dataset" / "diabetic_data_50000.csv"
+OUTPUT_DIR = BASE_DIR / "outputs" / "Multinomial_Logistic_Regression"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+COLUMN_NAMES = [
+    'encounter_id', 'patient_nbr', 'race', 'gender', 'age', 'weight',
+    'admission_type_id', 'discharge_disposition_id', 'admission_source_id',
+    'time_in_hospital', 'payer_code', 'medical_specialty', 'num_lab_procedures',
+    'num_procedures', 'num_medications', 'number_outpatient', 'number_emergency',
+    'number_inpatient', 'diag_1', 'diag_2', 'diag_3', 'number_diagnoses',
+    'max_glu_serum', 'A1Cresult', 'metformin', 'repaglinide', 'nateglinide',
+    'chlorpropamide', 'glimepiride', 'acetohexamide', 'glipizide', 'glyburide',
+    'tolbutamide', 'pioglitazone', 'rosiglitazone', 'acarbose', 'miglitol',
+    'troglitazone', 'tolazamide', 'examide', 'citoglipton', 'insulin',
+    'glyburide_metformin', 'glipizide_metformin', 'glimepiride_pioglitazone',
+    'metformin_rosiglitazone', 'metformin_pioglitazone', 'change', 'diabetesMed',
+    'readmitted'
 ]
 
-
-
-
-probability_output.to_csv(
-
-
-   os.path.join(
-       OUTPUT_FOLDER,
-       "softmax_probabilities.csv"
-   ),
-
-
-   index=False
-)
-
-
-
-
-# ==============================================================
-# 33. SAVE ACTUAL VS PREDICTED
-# ==============================================================
-
-
-actual_predicted = pd.DataFrame({
-
-
-   "Actual_Class":
-       label_encoder.inverse_transform(y_test),
-
-
-   "Predicted_Class":
-       label_encoder.inverse_transform(y_pred),
-
-
-   "Correct":
-       y_test == y_pred
-
-
-})
-
-
-
-
-actual_predicted.to_csv(
-
-
-   os.path.join(
-       OUTPUT_FOLDER,
-       "actual_vs_predicted.csv"
-   ),
-
-
-   index=False
-)
-
-
-
-
-# ==============================================================
-# 34. SAVE CLASS DISTRIBUTION
-# ==============================================================
-
-
-class_distribution = pd.DataFrame({
-
-
-   "Class":
-       class_names,
-
-
-   "Count":
-       [
-           np.sum(
-               y_encoded == i
-           )
-
-
-           for i in range(
-               number_of_classes
-           )
-       ]
-
-
-})
-
-
-
-
-class_distribution.to_csv(
-
-
-   os.path.join(
-       OUTPUT_FOLDER,
-       "class_distribution.csv"
-   ),
-
-
-   index=False
-)
-
-
-
-
-# ==============================================================
-# 35. CLASS DISTRIBUTION GRAPH
-# ==============================================================
-
-
-plt.figure(
-   figsize=(8, 5)
-)
-
-
-
-
-sns.barplot(
-
-
-   data=class_distribution,
-
-
-   x="Class",
-
-
-   y="Count",
-
-
-   hue="Class",
-
-
-   legend=False
-)
-
-
-
-
-plt.title(
-   "Placement Class Distribution"
-)
-
-
-plt.xlabel(
-   "Placement Class"
-)
-
-
-plt.ylabel(
-   "Number of Students"
-)
-
-
-plt.xticks(
-   rotation=30
-)
-
-
-plt.tight_layout()
-
-
-
-
-plt.savefig(
-
-
-   os.path.join(
-       OUTPUT_FOLDER,
-       "class_distribution.png"
-   ),
-
-
-   dpi=300
-)
-
-
-
-
-plt.close()
-
-
-
-
-# ==============================================================
-# 36. SAVE MODEL
-# ==============================================================
-
-
-model_file = os.path.join(
-
-
-   OUTPUT_FOLDER,
-
-
-   "multinomial_logistic_regression.pkl"
-)
-
-
-
-
-joblib.dump(
-
-
-   model,
-
-
-   model_file
-)
-
-
-
-
-# ==============================================================
-# 37. SAVE LABEL ENCODER
-# ==============================================================
-
-
-encoder_file = os.path.join(
-
-
-   OUTPUT_FOLDER,
-
-
-   "label_encoder.pkl"
-)
-
-
-
-
-joblib.dump(
-
-
-   label_encoder,
-
-
-   encoder_file
-)
-
-
-
-
-# ==============================================================
-# 38. SAVE MODEL COEFFICIENTS
-# ==============================================================
-
-
-coefficients = pd.DataFrame(
-
-
-   model.coef_,
-
-
-   columns=X.columns,
-
-
-   index=[
-       str(x)
-       for x in class_names
-   ]
-)
-
-
-
-
-coefficients.to_csv(
-
-
-   os.path.join(
-       OUTPUT_FOLDER,
-       "model_coefficients.csv"
-   )
-)
-
-
-
-
-# ==============================================================
-# 39. SAVE CLASS INTERCEPTS
-# ==============================================================
-
-
-intercepts = pd.DataFrame({
-
-
-   "Class":
-       [
-           str(x)
-           for x in class_names
-       ],
-
-
-   "Intercept":
-       model.intercept_
-
-
-})
-
-
-
-
-intercepts.to_csv(
-
-
-   os.path.join(
-       OUTPUT_FOLDER,
-       "model_intercepts.csv"
-   ),
-
-
-   index=False
-)
-
-
-
-
-# ==============================================================
-# 40. FINAL MESSAGE
-# ==============================================================
-
-
-print("\n" + "=" * 75)
-print("COMPLETED SUCCESSFULLY")
-print("=" * 75)
-
-
-print(
-   "\nIMPORTANT:"
-)
-
-
-print(
-   "Original preprocessed dataset was NOT modified."
-)
-
-
-print(
-   "\nAll generated files are stored in:"
-)
-
-
-print(
-   os.path.abspath(
-       OUTPUT_FOLDER
-   )
-)
-
-
-
-
-print("\nGenerated files:")
-
-
-for filename in sorted(
-   os.listdir(OUTPUT_FOLDER)
-):
-
-
-   print(
-       "   ",
-       filename
-   )
-
-
-
-
-print("\n" + "=" * 75)
+# Exclude identifiers, sparse columns, and ultra-high cardinality raw diagnostic codes
+DROP_COLUMNS = [
+    'encounter_id', 'patient_nbr', 'weight',
+    'payer_code', 'medical_specialty',
+    'diag_1', 'diag_2', 'diag_3'
+]
+
+def load_data():
+    with open(DATASET_PATH, "r", encoding="utf-8", errors="ignore") as f:
+        first_line = f.readline()
+    if "readmitted" in first_line or "encounter_id" in first_line:
+        df = pd.read_csv(DATASET_PATH)
+    else:
+        df = pd.read_csv(DATASET_PATH, header=None, names=COLUMN_NAMES)
+    return df.replace("?", np.nan)
+
+def main():
+    print("=" * 70)
+    print("VITALSIGN: MULTINOMIAL LOGISTIC REGRESSION (3-CLASS) (M2)")
+    print("=" * 70)
+
+    df = load_data()
+    print(f"Dataset Loaded: {len(df):,} Rows, {df.shape[1]} Columns")
+
+    # 3-Class Target: readmitted ('NO', '>30', '<30')
+    target_col = 'readmitted'
+    class_counts = df[target_col].value_counts()
+    print(f"\n[1] 3-Class Target Distribution ('{target_col}'):")
+    for cls_name, cnt in class_counts.items():
+        print(f"    - Class '{cls_name:5}': {cnt:,} encounters ({cnt / len(df):.2%})")
+
+    X = df.drop(columns=[c for c in DROP_COLUMNS if c in df.columns] + [target_col])
+    y = df[target_col]
+
+    num_cols = X.select_dtypes(include=[np.number]).columns.tolist()
+    cat_cols = X.select_dtypes(exclude=[np.number]).columns.tolist()
+
+    # Stratified 80/20 train/test split
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.20, random_state=42, stratify=y
+    )
+    print(f"\n[2] Stratified Split: Train = {len(X_train):,}, Test = {len(X_test):,}")
+
+    # Build Pipeline
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('num', Pipeline([
+                ('imputer', SimpleImputer(strategy='median')),
+                ('scaler', StandardScaler())
+            ]), num_cols),
+            ('cat', Pipeline([
+                ('imputer', SimpleImputer(strategy='most_frequent')),
+                ('encoder', OneHotEncoder(sparse_output=False, handle_unknown='ignore'))
+            ]), cat_cols)
+        ]
+    )
+
+    # Note: Modern scikit-learn uses solver='lbfgs' directly for multinomial softmax
+    clf_pipeline = Pipeline([
+        ('preprocessor', preprocessor),
+        ('classifier', LogisticRegression(
+            solver='lbfgs',
+            max_iter=300,
+            random_state=42
+        ))
+    ])
+
+    print("\n[3] Training Multinomial Logistic Regression Pipeline...")
+    clf_pipeline.fit(X_train, y_train)
+
+    print("\n[4] Evaluating on Holdout Test Set (10,000 Records)...")
+    y_pred = clf_pipeline.predict(X_test)
+
+    acc = accuracy_score(y_test, y_pred)
+    prec = precision_score(y_test, y_pred, average='macro', zero_division=0)
+    rec = recall_score(y_test, y_pred, average='macro', zero_division=0)
+    f1 = f1_score(y_test, y_pred, average='macro', zero_division=0)
+
+    print("\n[5] MULTICLASS PERFORMANCE METRICS (Macro-Averaged):")
+    print(f"    Overall Accuracy:      {acc:.4f} ({acc:.2%})")
+    print(f"    Macro Precision:       {prec:.4f}")
+    print(f"    Macro Recall:          {rec:.4f}")
+    print(f"    Macro F1-Score:        {f1:.4f}")
+
+    target_labels = ['NO', '>30', '<30']
+    cls_report = classification_report(y_test, y_pred, target_names=target_labels)
+    print("\n--- 3-CLASS CLASSIFICATION REPORT ---")
+    print(cls_report)
+
+    # Save Classification Report
+    report_file = OUTPUT_DIR / "classification_report.txt"
+    with open(report_file, "w", encoding="utf-8") as f:
+        f.write("VITALSIGN MULTINOMIAL LOGISTIC REGRESSION REPORT\n")
+        f.write("=" * 60 + "\n\n")
+        f.write(cls_report)
+    print(f"[OK] Report saved to: {report_file}")
+
+    # Save Metrics CSV
+    metrics_df = pd.DataFrame([{
+        'Model': 'Multinomial Logistic Regression (3-Class)',
+        'Accuracy': round(acc, 4),
+        'Macro_Precision': round(prec, 4),
+        'Macro_Recall': round(rec, 4),
+        'Macro_F1': round(f1, 4)
+    }])
+    metrics_file = OUTPUT_DIR / "metrics.csv"
+    metrics_df.to_csv(metrics_file, index=False)
+    print(f"[OK] Metrics table saved to: {metrics_file}")
+
+    # Confusion Matrix
+    cm = confusion_matrix(y_test, y_pred, labels=target_labels)
+    plt.figure(figsize=(7, 6))
+    sns.heatmap(
+        cm, annot=True, fmt=",d", cmap="Purples",
+        xticklabels=target_labels, yticklabels=target_labels
+    )
+    plt.title("Multinomial Logistic Regression Confusion Matrix", fontsize=12, fontweight="bold")
+    plt.xlabel("Predicted Readmission Class", fontsize=10)
+    plt.ylabel("Actual Readmission Class", fontsize=10)
+    plt.tight_layout()
+
+    cm_file = OUTPUT_DIR / "confusion_matrix.png"
+    plt.savefig(cm_file, dpi=300)
+    plt.close()
+    print(f"[OK] Confusion matrix plot saved to: {cm_file}")
+    print("=" * 70)
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,10 @@
+Feature,Missing_Count,Missing_Percentage
+weight,48138,96.28
+max_glu_serum,45361,90.72
+A1Cresult,42391,84.78
+payer_code,32655,65.31
+medical_specialty,17746,35.49
+race,1257,2.51
+diag_3,1083,2.17
+diag_2,266,0.53
+diag_1,11,0.02

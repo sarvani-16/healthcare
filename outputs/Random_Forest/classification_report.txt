@@ -1,0 +1,11 @@
+VITALSIGN RANDOM FOREST CLASSIFIER REPORT
+============================================================
+
+                       precision    recall  f1-score   support
+
+No Readmit / >30d (0)       0.93      0.64      0.76      8851
+  Readmitted <30d (1)       0.18      0.60      0.28      1149
+
+             accuracy                           0.64     10000
+            macro avg       0.55      0.62      0.52     10000
+         weighted avg       0.84      0.64      0.70     10000

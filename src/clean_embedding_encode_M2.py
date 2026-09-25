@@ -1,240 +1,86 @@
+"""
+=============================================================================
+VITALSIGN: CATEGORICAL EMBEDDING ENCODING (M2)
+Dataset: UCI Diabetes 130-US Hospitals (diabetic_data_50000.csv)
+=============================================================================
+
+ML Concept - Categorical Embedding Representation:
+In deep learning and neural network architectures, high-cardinality categorical
+variables are represented via low-dimensional dense embedding vectors (similar to
+Word2Vec). Prior to learning embeddings, categorical levels are mapped to integer
+vocabulary indices [0, num_categories - 1], with an extra index reserved for
+out-of-vocabulary or missing categories.
+=============================================================================
+"""
+
+import os
+from pathlib import Path
 import pandas as pd
 import numpy as np
 
-
-
-
-# ==========================================================
-# Load Placement Prediction Dataset
-# Original dataset is NOT modified
-# ==========================================================
-
-
-df = pd.read_csv("C:/Users/Manepalli Sarvani/PycharmProjects/placement_prediction/dataset/placement_predict_50K_Raw.csv")
-
-
-# Create copy
-data = df.copy()
-
-
-
-
-# ==========================================================
-# 1. Remove Leading and Trailing Spaces
-# ==========================================================
-
-
-for col in data.select_dtypes(include="object").columns:
-   data[col] = data[col].str.strip()
-
-
-
-
-# ==========================================================
-# 2. Identify Missing Values
-# ==========================================================
-
-
-print("Missing Values Before Cleaning:")
-print(data.isnull().sum())
-
-
-
-
-# ==========================================================
-# 3. Remove Duplicate Records
-# ==========================================================
-
-
-duplicate_count = data.duplicated().sum()
-
-
-data = data.drop_duplicates()
-
-
-print("\nDuplicate Records Removed:",
-     duplicate_count)
-
-
-
-
-# ==========================================================
-# 4. Identify Numerical and Categorical Columns
-# ==========================================================
-
-
-num_cols = data.select_dtypes(
-   include=np.number
-).columns.tolist()
-
-
-cat_cols = data.select_dtypes(
-   exclude=np.number
-).columns.tolist()
-
-
-
-
-print("\nNumerical Columns:")
-print(num_cols)
-
-
-print("\nCategorical Columns:")
-print(cat_cols)
-
-
-
-
-# ==========================================================
-# 5. Fill Missing Numerical Values with Mean
-# ==========================================================
-
-
-for col in num_cols:
-
-
-   mean_value = data[col].mean()
-
-
-   data[col] = data[col].fillna(mean_value)
-
-
-
-
-# ==========================================================
-# 6. Fill Missing Categorical Values with Mode
-# ==========================================================
-
-
-for col in cat_cols:
-
-
-   mode_value = data[col].mode()[0]
-
-
-   data[col] = data[col].fillna(mode_value)
-
-
-
-
-# ==========================================================
-# 7. Pandas-Based Embedding Encoding
-# ==========================================================
-
-
-embedding_output = pd.DataFrame()
-
-
-
-
-embedding_size = 3     # Number of embedding dimensions
-
-
-
-
-for col in cat_cols:
-
-
-   # Get unique categories
-   categories = data[col].unique()
-
-
-
-
-   # Create embedding values
-   embedding_matrix = {}
-
-
-   for index, category in enumerate(categories):
-
-
-       vector = np.zeros(embedding_size)
-
-
-       vector[index % embedding_size] = 1
-
-
-       embedding_matrix[category] = vector
-
-
-
-
-   # Convert category to embedding vector
-
-
-   embeddings = data[col].map(
-       embedding_matrix
-   )
-
-
-
-
-   embedding_df = pd.DataFrame(
-       embeddings.tolist(),
-       columns=[
-           f"Embedding_{col}_1",
-           f"Embedding_{col}_2",
-           f"Embedding_{col}_3"
-       ]
-   )
-
-
-
-
-   embedding_output = pd.concat(
-       [
-           embedding_output,
-           embedding_df
-       ],
-       axis=1
-   )
-
-
-
-
-# ==========================================================
-# 8. Merge Numerical Columns + Embeddings
-# ==========================================================
-
-
-final_output = pd.concat(
-   [
-       data[num_cols].reset_index(drop=True),
-       embedding_output.reset_index(drop=True)
-   ],
-   axis=1
-)
-
-
-
-
-# ==========================================================
-# 9. Check Missing Values After Processing
-# ==========================================================
-
-
-print("\nMissing Values After Cleaning:")
-print(final_output.isnull().sum())
-
-
-
-
-# ==========================================================
-# 10. Save Result
-# ==========================================================
-
-
-final_output.to_csv(
-   "C:/Users/Manepalli Sarvani/PycharmProjects/placement_prediction/dataset/clean_embedded_encode_M2.csv",
-   index=False
-)
-
-
-
-
-print("\n======================================")
-print("Embedding Encoding Completed")
-print("Original dataset is NOT modified")
-print("Output File:")
-print("clean_embedded_encode_M2.csv")
-print("======================================")
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATASET_PATH = BASE_DIR / "dataset" / "diabetic_data_50000.csv"
+OUTPUT_DIR = BASE_DIR / "outputs"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+COLUMN_NAMES = [
+    'encounter_id', 'patient_nbr', 'race', 'gender', 'age', 'weight',
+    'admission_type_id', 'discharge_disposition_id', 'admission_source_id',
+    'time_in_hospital', 'payer_code', 'medical_specialty', 'num_lab_procedures',
+    'num_procedures', 'num_medications', 'number_outpatient', 'number_emergency',
+    'number_inpatient', 'diag_1', 'diag_2', 'diag_3', 'number_diagnoses',
+    'max_glu_serum', 'A1Cresult', 'metformin', 'repaglinide', 'nateglinide',
+    'chlorpropamide', 'glimepiride', 'acetohexamide', 'glipizide', 'glyburide',
+    'tolbutamide', 'pioglitazone', 'rosiglitazone', 'acarbose', 'miglitol',
+    'troglitazone', 'tolazamide', 'examide', 'citoglipton', 'insulin',
+    'glyburide_metformin', 'glipizide_metformin', 'glimepiride_pioglitazone',
+    'metformin_rosiglitazone', 'metformin_pioglitazone', 'change', 'diabetesMed',
+    'readmitted'
+]
+
+def load_data():
+    with open(DATASET_PATH, "r", encoding="utf-8", errors="ignore") as f:
+        first_line = f.readline()
+    if "readmitted" in first_line or "encounter_id" in first_line:
+        df = pd.read_csv(DATASET_PATH)
+    else:
+        df = pd.read_csv(DATASET_PATH, header=None, names=COLUMN_NAMES)
+    return df.replace("?", np.nan)
+
+def main():
+    print("=" * 70)
+    print("VITALSIGN: CATEGORICAL EMBEDDING VOCABULARY ENCODING (M2)")
+    print("=" * 70)
+
+    df = load_data()
+    print(f"Dataset Loaded: {len(df):,} Rows, {df.shape[1]} Columns")
+
+    selected_cols = ['race', 'gender', 'age', 'insulin', 'diabetesMed']
+    subset = df[selected_cols].fillna('Missing').copy()
+
+    encoded_dict = {}
+    vocab_maps = {}
+
+    for col in selected_cols:
+        unique_vals = sorted(subset[col].unique().tolist())
+        vocab = {val: idx for idx, val in enumerate(unique_vals)}
+        vocab_maps[col] = vocab
+        encoded_dict[f"{col}_embedding_idx"] = subset[col].map(vocab)
+
+    encoded_df = pd.DataFrame(encoded_dict)
+    combined_demo = pd.concat([subset.head(10), encoded_df.head(10)], axis=1)
+
+    print("\n[1] Vocabulary Index Mappings for Neural Embeddings:")
+    for col, vmap in vocab_maps.items():
+        print(f"    - Feature '{col}' ({len(vmap)} unique levels): {vmap}")
+
+    print("\n[2] Comparison of Categorical Strings vs Embedding Vocabulary Indices (First 10 Patients):")
+    print(combined_demo[['race', 'race_embedding_idx', 'age', 'age_embedding_idx', 'insulin', 'insulin_embedding_idx']].to_string(index=False))
+
+    out_csv = OUTPUT_DIR / "clean_embedded_encode_M2.csv"
+    combined_demo.to_csv(out_csv, index=False)
+    print(f"\n[OK] Embedding vocabulary demonstration saved to: {out_csv}")
+    print("=" * 70)
+
+if __name__ == "__main__":
+    main()

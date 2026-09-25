@@ -1,0 +1,11 @@
+VITALSIGN ADABOOST ENSEMBLE CLASSIFIER REPORT
+============================================================
+
+                       precision    recall  f1-score   support
+
+No Readmit / >30d (0)       0.89      1.00      0.94      8851
+  Readmitted <30d (1)       0.40      0.01      0.01      1149
+
+             accuracy                           0.88     10000
+            macro avg       0.64      0.50      0.48     10000
+         weighted avg       0.83      0.88      0.83     10000

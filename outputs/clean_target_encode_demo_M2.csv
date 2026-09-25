@@ -1,0 +1,16 @@
+encounter_id,race_category,target_encoded_readmission_rate,actual_y_test
+72193440,Caucasian,0.1148,0
+29367228,Caucasian,0.1148,0
+59544276,Caucasian,0.1148,0
+119827806,AfricanAmerican,0.1195,0
+3706656,Caucasian,0.1148,0
+120647502,Caucasian,0.1148,0
+116134824,Caucasian,0.1148,0
+135721122,Caucasian,0.1148,0
+105370968,Caucasian,0.1148,0
+86316192,Caucasian,0.1148,0
+50692650,Caucasian,0.1148,0
+86659464,Caucasian,0.1148,0
+148474320,AfricanAmerican,0.1195,0
+75560898,Hispanic,0.1147,0
+117010956,Hispanic,0.1147,1

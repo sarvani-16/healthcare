@@ -1,0 +1,15 @@
+Metric,Value
+Total Dataset Rows,50000
+Total Dataset Columns,50
+Total Missing Cells,188908
+Missing Cell Percentage,7.56%
+Ground Truth Class 0 Count,44257
+Ground Truth Class 1 Count,5743
+Ground Truth Readmission Rate,11.49%
+Batch Predicted Class 0 Count,6134
+Batch Predicted Class 1 Count,3866
+Batch Mean Predicted Probability,0.4841
+Batch Test Accuracy,0.6365
+Batch Test Precision,0.1785
+Batch Test Recall,0.6005
+Batch Test F1-Score,0.2752

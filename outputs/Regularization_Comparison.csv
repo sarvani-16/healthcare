@@ -1,0 +1,5 @@
+Model,MAE,MSE,RMSE,R2_Score
+OLS Linear Regression,2.0431,7.0796,2.6608,0.2591
+Ridge Regression (L2),2.0431,7.0796,2.6608,0.2591
+Lasso Regression (L1),2.0434,7.0781,2.6605,0.2592
+Elastic Net (L1+L2),2.0435,7.0788,2.6606,0.2591

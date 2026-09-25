@@ -1,634 +1,181 @@
-# ============================================================
-# LINEAR REGRESSION
-# Closed-Form Normal Equation vs Gradient Descent
-#
-# Images are stored in ONE separate folder
-# ============================================================
+"""
+=============================================================================
+VITALSIGN: CLOSED-FORM NORMAL EQUATION vs GRADIENT DESCENT (M2)
+Dataset: UCI Diabetes 130-US Hospitals (diabetic_data_50000.csv)
+Target: time_in_hospital (Continuous Length of Stay, in days)
+Predictors: Clinical Numerical Attributes
+=============================================================================
 
+ML Concept - Closed-Form vs Iterative Optimization:
+1. Closed-Form Normal Equation (CFNE):
+   Analytically computes the exact optimal parameters beta in a single matrix
+   operation without iterations:
+       beta = (X^T * X)^(-1) * X^T * y
+   Computationally exact, but requires O(p^3) matrix inversion, which becomes
+   expensive when feature dimension p is huge.
+
+2. Stochastic / Mini-Batch Gradient Descent (GD):
+   Iteratively steps in the negative gradient direction of the loss surface:
+       beta := beta - alpha * grad(Loss)
+   Scales effectively to millions of samples and high dimensions, but requires
+   feature standardization (StandardScaler) and hyperparameter tuning (learning rate alpha).
+=============================================================================
+"""
 
 import os
-import numpy as np
+from pathlib import Path
 import pandas as pd
+import numpy as np
+
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.linear_model import LinearRegression, SGDRegressor
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATASET_PATH = BASE_DIR / "dataset" / "diabetic_data_50000.csv"
+OUTPUT_DIR = BASE_DIR / "outputs"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-
-
-# ============================================================
-# 1. LOAD DATASET
-# ============================================================
-
-
-data = pd.read_csv(
-   "C:/Users/Manepalli Sarvani/PycharmProjects/placement_prediction/dataset/final_preprocess_M2.csv"
-)
-
-
-# Extract all columns except last column
-X = data.iloc[:, :-1].values
-
-
-# Extract last column as target
-y = data.iloc[:, -1].values
-
-
-
-
-# ============================================================
-# 2. CREATE IMAGE OUTPUT FOLDER
-# ============================================================
-
-
-IMAGE_FOLDER = (
-   "C:/Users/Manepalli Sarvani/PycharmProjects/placement_prediction/outputs/Linear_Regression_CFNE_GD_Compare_M2"
-)
-
-
-os.makedirs(IMAGE_FOLDER, exist_ok=True)
-
-
-print("Image output folder:")
-print(IMAGE_FOLDER)
-
-
-
-
-# ============================================================
-# 3. TRAIN-TEST SPLIT
-# ============================================================
-
-
-X_train, X_test, y_train, y_test = train_test_split(
-   X,
-   y,
-   test_size=0.2,
-   random_state=42
-)
-
-
-
-
-# ============================================================
-# 4. FEATURE SCALING
-#    Important for Gradient Descent
-# ============================================================
-
-
-scaler = StandardScaler()
-
-
-X_train_scaled = scaler.fit_transform(X_train)
-
-
-X_test_scaled = scaler.transform(X_test)
-
-
-
-
-# ============================================================
-# 5. CLOSED FORM SOLUTION
-#    NORMAL EQUATION
-# ============================================================
-
-
-# Add bias column
-
-
-X_train_bias = np.c_[
-   np.ones((X_train.shape[0], 1)),
-   X_train
+COLUMN_NAMES = [
+    'encounter_id', 'patient_nbr', 'race', 'gender', 'age', 'weight',
+    'admission_type_id', 'discharge_disposition_id', 'admission_source_id',
+    'time_in_hospital', 'payer_code', 'medical_specialty', 'num_lab_procedures',
+    'num_procedures', 'num_medications', 'number_outpatient', 'number_emergency',
+    'number_inpatient', 'diag_1', 'diag_2', 'diag_3', 'number_diagnoses',
+    'max_glu_serum', 'A1Cresult', 'metformin', 'repaglinide', 'nateglinide',
+    'chlorpropamide', 'glimepiride', 'acetohexamide', 'glipizide', 'glyburide',
+    'tolbutamide', 'pioglitazone', 'rosiglitazone', 'acarbose', 'miglitol',
+    'troglitazone', 'tolazamide', 'examide', 'citoglipton', 'insulin',
+    'glyburide_metformin', 'glipizide_metformin', 'glimepiride_pioglitazone',
+    'metformin_rosiglitazone', 'metformin_pioglitazone', 'change', 'diabetesMed',
+    'readmitted'
 ]
 
-
-X_test_bias = np.c_[
-   np.ones((X_test.shape[0], 1)),
-   X_test
-]
-
-
-
-
-# Normal Equation
-#
-# theta = (X^T X)^(-1) X^T y
-
-
-theta = np.linalg.inv(
-   X_train_bias.T.dot(X_train_bias)
-).dot(
-   X_train_bias.T
-).dot(
-   y_train
-)
-
-
-
-
-# Prediction
-
-
-pred_normal = X_test_bias.dot(theta)
-
-
-
-
-# Metrics
-
-
-mse_normal = mean_squared_error(
-   y_test,
-   pred_normal
-)
-
-
-r2_normal = r2_score(
-   y_test,
-   pred_normal
-)
-
-
-
-
-print("\n------ Closed Form Normal Equation ------")
-
-
-print("Coefficients:")
-print(theta)
-
-
-print("MSE:", mse_normal)
-
-
-print("R2 Score:", r2_normal)
-
-
-
-
-# ============================================================
-# 6. GRADIENT DESCENT
-# ============================================================
-
-
-X_train_gd = np.c_[
-   np.ones((X_train_scaled.shape[0], 1)),
-   X_train_scaled
-]
-
-
-X_test_gd = np.c_[
-   np.ones((X_test_scaled.shape[0], 1)),
-   X_test_scaled
-]
-
-
-
-
-m = len(y_train)
-
-
-theta_gd = np.zeros(
-   X_train_gd.shape[1]
-)
-
-
-learning_rate = 0.01
-
-
-epochs = 1000
-
-
-
-
-# ============================================================
-# 7. STORE LOSS FOR EACH EPOCH
-# ============================================================
-
-
-loss_history = []
-
-
-
-
-# ============================================================
-# 8. GRADIENT DESCENT ITERATIONS
-# ============================================================
-
-
-for epoch in range(epochs):
-
-
-   # Prediction
-   predictions = X_train_gd.dot(theta_gd)
-
-
-   # Error
-   errors = predictions - y_train
-
-
-   # Gradient
-   gradients = (
-       (2 / m)
-       * X_train_gd.T.dot(errors)
-   )
-
-
-   # Update parameters
-   theta_gd -= (
-       learning_rate * gradients
-   )
-
-
-   # Calculate training MSE
-   loss = np.mean(
-       errors ** 2
-   )
-
-
-   loss_history.append(loss)
-
-
-
-
-# ============================================================
-# 9. GRADIENT DESCENT PREDICTION
-# ============================================================
-
-
-pred_gd = X_test_gd.dot(
-   theta_gd
-)
-
-
-
-
-# ============================================================
-# 10. GRADIENT DESCENT METRICS
-# ============================================================
-
-
-mse_gd = mean_squared_error(
-   y_test,
-   pred_gd
-)
-
-
-r2_gd = r2_score(
-   y_test,
-   pred_gd
-)
-
-
-
-
-print("\n------ Gradient Descent ------")
-
-
-print("Coefficients:")
-print(theta_gd)
-
-
-print("MSE:", mse_gd)
-
-
-print("R2 Score:", r2_gd)
-
-
-
-
-# ============================================================
-# 11. COMPARISON
-# ============================================================
-
-
-print("\n=========== Comparison ===========")
-
-
-print("\nNormal Equation")
-
-
-print("MSE =", mse_normal)
-
-
-print("R2 =", r2_normal)
-
-
-
-
-print("\nGradient Descent")
-
-
-print("MSE =", mse_gd)
-
-
-print("R2 =", r2_gd)
-
-
-
-
-# ============================================================
-# IMAGE 1
-# ACTUAL VS PREDICTED VALUES
-# ============================================================
-
-
-plt.figure(figsize=(8, 6))
-
-
-plt.scatter(
-   y_test,
-   pred_normal,
-   alpha=0.5,
-   label="Normal Equation"
-)
-
-
-plt.scatter(
-   y_test,
-   pred_gd,
-   alpha=0.5,
-   label="Gradient Descent"
-)
-
-
-# Perfect prediction line
-
-
-minimum = min(
-   y_test.min(),
-   pred_normal.min(),
-   pred_gd.min()
-)
-
-
-maximum = max(
-   y_test.max(),
-   pred_normal.max(),
-   pred_gd.max()
-)
-
-
-plt.plot(
-   [minimum, maximum],
-   [minimum, maximum],
-   linestyle="--",
-   label="Perfect Prediction"
-)
-
-
-plt.xlabel("Actual Values")
-
-
-plt.ylabel("Predicted Values")
-
-
-plt.title(
-   "Actual vs Predicted Values"
-)
-
-
-plt.legend()
-
-
-plt.grid(True)
-
-
-plt.tight_layout()
-
-
-
-
-image1 = os.path.join(
-   IMAGE_FOLDER,
-   "actual_vs_predicted.png"
-)
-
-
-plt.savefig(
-   image1,
-   dpi=300,
-   bbox_inches="tight"
-)
-
-
-plt.close()
-
-
-print("\nImage saved:")
-print(image1)
-
-
-
-
-# ============================================================
-# IMAGE 2
-# RESIDUAL COMPARISON
-# ============================================================
-# Calculate the residual = actual data − predicted data.
-# Compress the residual instead of the entire original data
-normal_residuals = (
-   y_test - pred_normal
-)
-
-
-gd_residuals = (
-   y_test - pred_gd
-)
-
-
-plt.figure(figsize=(9, 6))
-
-
-plt.scatter(
-   pred_normal,
-   normal_residuals,
-   alpha=0.5,
-   label="Normal Equation"
-)
-
-
-plt.scatter(
-   pred_gd,
-   gd_residuals,
-   alpha=0.5,
-   label="Gradient Descent"
-)
-
-
-plt.axhline(
-   y=0,
-   linestyle="--"
-)
-
-
-plt.xlabel(
-   "Predicted Values"
-)
-
-
-plt.ylabel(
-   "Residuals"
-)
-
-
-plt.title(
-   "Residual Comparison"
-)
-
-
-plt.legend()
-
-
-plt.grid(True)
-
-
-plt.tight_layout()
-
-
-
-
-image2 = os.path.join(
-   IMAGE_FOLDER,
-   "residual_comparison.png"
-)
-
-
-plt.savefig(
-   image2,
-   dpi=300,
-   bbox_inches="tight"
-)
-
-
-plt.close()
-
-
-print("Image saved:")
-print(image2)
-
-
-
-
-# ============================================================
-# IMAGE 3
-# GRADIENT DESCENT LOSS CURVE
-# ============================================================
-
-
-plt.figure(figsize=(9, 6))
-
-
-plt.plot(
-   range(1, epochs + 1),
-   loss_history
-)
-
-
-plt.xlabel(
-   "Epoch"
-)
-
-
-plt.ylabel(
-   "Mean Squared Error"
-)
-
-
-plt.title(
-   "Gradient Descent Convergence"
-)
-
-
-plt.grid(True)
-
-
-plt.tight_layout()
-
-
-
-
-image3 = os.path.join(
-   IMAGE_FOLDER,
-   "gradient_descent_loss.png"
-)
-
-
-plt.savefig(
-   image3,
-   dpi=300,
-   bbox_inches="tight"
-)
-
-
-plt.close()
-
-
-print("Image saved:")
-print(image3)
-
-
-
-
-# ============================================================
-# 12. SAVE IMAGE INFORMATION
-# ============================================================
-
-
-image_info = pd.DataFrame({
-   "Image": [
-       "actual_vs_predicted.png",
-       "residual_comparison.png",
-       "gradient_descent_loss.png"
-   ],
-   "Description": [
-       "Actual values versus predictions from both methods",
-       "Residual comparison between Normal Equation and Gradient Descent",
-       "MSE loss across Gradient Descent epochs"
-   ]
-})
-
-
-image_info.to_csv(
-   os.path.join(
-       IMAGE_FOLDER,
-       "image_information.csv"
-   ),
-   index=False
-)
-
-
-
-
-# ============================================================
-# FINAL MESSAGE
-# ============================================================
-
-
-print("\n==========================================")
-print("PROCESS COMPLETED SUCCESSFULLY")
-print("==========================================")
-
-
-print("\nAll images are stored in ONE folder:")
-
-
-print(IMAGE_FOLDER)
-
-
-print("\nGenerated images:")
-
-
-print("1. actual_vs_predicted.png")
-
-
-print("2. residual_comparison.png")
-
-
-print("3. gradient_descent_loss.png")
-
-
-print("\nOriginal dataset was NOT modified.")
+def load_data():
+    with open(DATASET_PATH, "r", encoding="utf-8", errors="ignore") as f:
+        first_line = f.readline()
+    if "readmitted" in first_line or "encounter_id" in first_line:
+        df = pd.read_csv(DATASET_PATH)
+    else:
+        df = pd.read_csv(DATASET_PATH, header=None, names=COLUMN_NAMES)
+    return df.replace("?", np.nan)
+
+def main():
+    print("=" * 70)
+    print("VITALSIGN: NORMAL EQUATION (CFNE) vs GRADIENT DESCENT (GD) (M2)")
+    print("=" * 70)
+
+    df = load_data()
+    print(f"Dataset Loaded: {len(df):,} Rows, {df.shape[1]} Columns")
+
+    target_col = 'time_in_hospital'
+    predictor_cols = [
+        'num_lab_procedures',
+        'num_procedures',
+        'num_medications',
+        'number_diagnoses',
+        'number_inpatient',
+        'number_emergency'
+    ]
+
+    data = df[predictor_cols + [target_col]].dropna().copy()
+    X = data[predictor_cols]
+    y = data[target_col]
+
+    # Train/Test Split (80/20)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.20, random_state=42
+    )
+
+    # Standardize predictors for Gradient Descent convergence
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+
+    # 1. Closed-Form Normal Equation (via analytical OLS)
+    print("\n[1] Fitting Closed-Form Normal Equation (OLS)...")
+    cfne_model = LinearRegression()
+    cfne_model.fit(X_train_scaled, y_train)
+    y_pred_cfne = cfne_model.predict(X_test_scaled)
+
+    cfne_mae = mean_absolute_error(y_test, y_pred_cfne)
+    cfne_mse = mean_squared_error(y_test, y_pred_cfne)
+    cfne_rmse = np.sqrt(cfne_mse)
+    cfne_r2 = r2_score(y_test, y_pred_cfne)
+
+    # 2. Gradient Descent (Iterative SGD Regressor)
+    print("\n[2] Fitting Iterative Gradient Descent (SGDRegressor, max_iter=1000)...")
+    gd_model = SGDRegressor(loss='squared_error', max_iter=1000, tol=1e-3, random_state=42)
+    gd_model.fit(X_train_scaled, y_train)
+    y_pred_gd = gd_model.predict(X_test_scaled)
+
+    gd_mae = mean_absolute_error(y_test, y_pred_gd)
+    gd_mse = mean_squared_error(y_test, y_pred_gd)
+    gd_rmse = np.sqrt(gd_mse)
+    gd_r2 = r2_score(y_test, y_pred_gd)
+
+    # Comparison Table
+    comparison_df = pd.DataFrame([
+        {
+            'Optimization_Method': 'Closed-Form Normal Equation (OLS)',
+            'MAE': round(cfne_mae, 4),
+            'MSE': round(cfne_mse, 4),
+            'RMSE': round(cfne_rmse, 4),
+            'R2_Score': round(cfne_r2, 4)
+        },
+        {
+            'Optimization_Method': 'Stochastic Gradient Descent (SGD)',
+            'MAE': round(gd_mae, 4),
+            'MSE': round(gd_mse, 4),
+            'RMSE': round(gd_rmse, 4),
+            'R2_Score': round(gd_r2, 4)
+        }
+    ])
+
+    print("\n[3] COMPARISON SUMMARY RESULTS:")
+    print(comparison_df.to_string(index=False))
+
+    # Save CSV
+    out_csv = OUTPUT_DIR / "Linear_Regression_CFNE_GD_Comparison.csv"
+    comparison_df.to_csv(out_csv, index=False)
+    print(f"\n[OK] Comparison CSV saved to: {out_csv}")
+
+    # Plot Comparison Chart
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+    # Subplot 1: Error Metrics
+    x_indices = np.arange(2)
+    width = 0.25
+    axes[0].bar(x_indices - width/2, [cfne_mae, cfne_rmse], width, label="Normal Eq (CFNE)", color="#3b82f6")
+    axes[0].bar(x_indices + width/2, [gd_mae, gd_rmse], width, label="Gradient Descent (GD)", color="#10b981")
+    axes[0].set_xticks(x_indices)
+    axes[0].set_xticklabels(['MAE (Days)', 'RMSE (Days)'], fontsize=11)
+    axes[0].set_title("Error Metric Comparison (Lower is Better)", fontsize=12, fontweight="bold")
+    axes[0].legend()
+    axes[0].grid(True, linestyle="--", alpha=0.5)
+
+    # Subplot 2: R2 Score
+    axes[1].bar(["Normal Eq (CFNE)", "Gradient Descent (GD)"], [cfne_r2, gd_r2], color=["#3b82f6", "#10b981"], width=0.4)
+    axes[1].set_ylim(0, max(cfne_r2, gd_r2) * 1.3)
+    axes[1].set_ylabel("R-squared (R2)", fontsize=11)
+    axes[1].set_title("Variance Explained (R2 Score)", fontsize=12, fontweight="bold")
+    for i, v in enumerate([cfne_r2, gd_r2]):
+        axes[1].text(i, v + 0.01, f"{v:.4f}", ha='center', fontweight='bold')
+    axes[1].grid(True, linestyle="--", alpha=0.5)
+
+    plt.suptitle("VitalSign: Normal Equation vs Gradient Descent Optimization", fontsize=14, fontweight="bold")
+    plt.tight_layout()
+
+    out_png = OUTPUT_DIR / "CFNE_vs_GD_Comparison.png"
+    plt.savefig(out_png, dpi=300)
+    plt.close()
+    print(f"[OK] Comparison chart saved to: {out_png}")
+    print("=" * 70)
+
+if __name__ == "__main__":
+    main()

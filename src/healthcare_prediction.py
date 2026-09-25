@@ -115,22 +115,41 @@ def predict_patient(patient_dict: dict) -> dict:
     Predicts 30-day readmission risk for a single patient dictionary.
     Returns structured results including prediction, probability, risk tier, and educational disclaimer.
     """
+    from sklearn.pipeline import Pipeline
+
     model, preprocessor, metadata = load_model_and_metadata()
-    feature_cols = metadata.get("feature_columns", [])
+    feature_cols = metadata.get("feature_columns") or metadata.get("features") or [
+        'race', 'gender', 'age', 'admission_type_id', 'discharge_disposition_id',
+        'admission_source_id', 'time_in_hospital', 'num_lab_procedures',
+        'num_procedures', 'num_medications', 'number_outpatient', 'number_emergency',
+        'number_inpatient', 'diag_1', 'diag_2', 'diag_3', 'number_diagnoses',
+        'max_glu_serum', 'A1Cresult', 'metformin', 'repaglinide', 'nateglinide',
+        'chlorpropamide', 'glimepiride', 'acetohexamide', 'glipizide', 'glyburide',
+        'tolbutamide', 'pioglitazone', 'rosiglitazone', 'acarbose', 'miglitol',
+        'troglitazone', 'tolazamide', 'examide', 'citoglipton', 'insulin',
+        'glyburide_metformin', 'glipizide_metformin', 'glimepiride_pioglitazone',
+        'metformin_rosiglitazone', 'metformin_pioglitazone', 'change', 'diabetesMed'
+    ]
     default_vals = metadata.get("default_values", {})
 
     input_df = prepare_patient_row(patient_dict, feature_cols, default_vals)
 
-    # Transform through ColumnTransformer
-    X_trans = preprocessor.transform(input_df)
-
-    # Predictions
-    pred_class = int(model.predict(X_trans)[0])
-    if hasattr(model, "predict_proba"):
-        prob_array = model.predict_proba(X_trans)[0]
-        prob_readmit = float(prob_array[1])
+    # Check if model is an end-to-end Pipeline with built-in preprocessor
+    if isinstance(model, Pipeline):
+        pred_class = int(model.predict(input_df)[0])
+        if hasattr(model, "predict_proba"):
+            prob_array = model.predict_proba(input_df)[0]
+            prob_readmit = float(prob_array[1])
+        else:
+            prob_readmit = 1.0 if pred_class == 1 else 0.0
     else:
-        prob_readmit = 1.0 if pred_class == 1 else 0.0
+        X_trans = preprocessor.transform(input_df)
+        pred_class = int(model.predict(X_trans)[0])
+        if hasattr(model, "predict_proba"):
+            prob_array = model.predict_proba(X_trans)[0]
+            prob_readmit = float(prob_array[1])
+        else:
+            prob_readmit = 1.0 if pred_class == 1 else 0.0
 
     risk_info = get_risk_tier(prob_readmit)
 
@@ -152,8 +171,21 @@ def predict_batch(df: pd.DataFrame) -> pd.DataFrame:
     Predicts readmission for a batch pandas DataFrame.
     Returns input DataFrame with prediction columns appended.
     """
+    from sklearn.pipeline import Pipeline
+
     model, preprocessor, metadata = load_model_and_metadata()
-    feature_cols = metadata.get("feature_columns", [])
+    feature_cols = metadata.get("feature_columns") or metadata.get("features") or [
+        'race', 'gender', 'age', 'admission_type_id', 'discharge_disposition_id',
+        'admission_source_id', 'time_in_hospital', 'num_lab_procedures',
+        'num_procedures', 'num_medications', 'number_outpatient', 'number_emergency',
+        'number_inpatient', 'diag_1', 'diag_2', 'diag_3', 'number_diagnoses',
+        'max_glu_serum', 'A1Cresult', 'metformin', 'repaglinide', 'nateglinide',
+        'chlorpropamide', 'glimepiride', 'acetohexamide', 'glipizide', 'glyburide',
+        'tolbutamide', 'pioglitazone', 'rosiglitazone', 'acarbose', 'miglitol',
+        'troglitazone', 'tolazamide', 'examide', 'citoglipton', 'insulin',
+        'glyburide_metformin', 'glipizide_metformin', 'glimepiride_pioglitazone',
+        'metformin_rosiglitazone', 'metformin_pioglitazone', 'change', 'diabetesMed'
+    ]
     default_vals = metadata.get("default_values", {})
 
     rows = []
@@ -169,13 +201,20 @@ def predict_batch(df: pd.DataFrame) -> pd.DataFrame:
         rows.append(row)
 
     aligned_df = pd.DataFrame(rows)
-    X_trans = preprocessor.transform(aligned_df)
 
-    preds = model.predict(X_trans)
-    if hasattr(model, "predict_proba"):
-        probas = model.predict_proba(X_trans)[:, 1]
+    if isinstance(model, Pipeline):
+        preds = model.predict(aligned_df)
+        if hasattr(model, "predict_proba"):
+            probas = model.predict_proba(aligned_df)[:, 1]
+        else:
+            probas = preds.astype(float)
     else:
-        probas = preds.astype(float)
+        X_trans = preprocessor.transform(aligned_df)
+        preds = model.predict(X_trans)
+        if hasattr(model, "predict_proba"):
+            probas = model.predict_proba(X_trans)[:, 1]
+        else:
+            probas = preds.astype(float)
 
     result_df = df.copy()
     result_df["Predicted_Readmission_30d"] = preds

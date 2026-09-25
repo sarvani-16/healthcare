@@ -1,0 +1,84 @@
+VITALSIGN HEALTHCARE DATASET UNDERSTANDING SUMMARY
+Total Rows: 50,000
+Total Columns: 50
+Duplicate Count: 0
+Total Missing Values: 188,908
+
+Columns:
+encounter_id, patient_nbr, race, gender, age, weight, admission_type_id, discharge_disposition_id, admission_source_id, time_in_hospital, payer_code, medical_specialty, num_lab_procedures, num_procedures, num_medications, number_outpatient, number_emergency, number_inpatient, diag_1, diag_2, diag_3, number_diagnoses, max_glu_serum, A1Cresult, metformin, repaglinide, nateglinide, chlorpropamide, glimepiride, acetohexamide, glipizide, glyburide, tolbutamide, pioglitazone, rosiglitazone, acarbose, miglitol, troglitazone, tolazamide, examide, citoglipton, insulin, glyburide_metformin, glipizide_metformin, glimepiride_pioglitazone, metformin_rosiglitazone, metformin_pioglitazone, change, diabetesMed, readmitted
+
+Data Info:
+<class 'pandas.DataFrame'>
+RangeIndex: 50000 entries, 0 to 49999
+Data columns (total 50 columns):
+ #   Column                    Non-Null Count  Dtype
+---  ------                    --------------  -----
+ 0   encounter_id              50000 non-null  int64
+ 1   patient_nbr               50000 non-null  int64
+ 2   race                      48743 non-null  str  
+ 3   gender                    50000 non-null  str  
+ 4   age                       50000 non-null  str  
+ 5   weight                    1862 non-null   str  
+ 6   admission_type_id         50000 non-null  int64
+ 7   discharge_disposition_id  50000 non-null  int64
+ 8   admission_source_id       50000 non-null  int64
+ 9   time_in_hospital          50000 non-null  int64
+ 10  payer_code                17345 non-null  str  
+ 11  medical_specialty         32254 non-null  str  
+ 12  num_lab_procedures        50000 non-null  int64
+ 13  num_procedures            50000 non-null  int64
+ 14  num_medications           50000 non-null  int64
+ 15  number_outpatient         50000 non-null  int64
+ 16  number_emergency          50000 non-null  int64
+ 17  number_inpatient          50000 non-null  int64
+ 18  diag_1                    49989 non-null  str  
+ 19  diag_2                    49734 non-null  str  
+ 20  diag_3                    48917 non-null  str  
+ 21  number_diagnoses          50000 non-null  int64
+ 22  max_glu_serum             4639 non-null   str  
+ 23  A1Cresult                 7609 non-null   str  
+ 24  metformin                 50000 non-null  str  
+ 25  repaglinide               50000 non-null  str  
+ 26  nateglinide               50000 non-null  str  
+ 27  chlorpropamide            50000 non-null  str  
+ 28  glimepiride               50000 non-null  str  
+ 29  acetohexamide             50000 non-null  str  
+ 30  glipizide                 50000 non-null  str  
+ 31  glyburide                 50000 non-null  str  
+ 32  tolbutamide               50000 non-null  str  
+ 33  pioglitazone              50000 non-null  str  
+ 34  rosiglitazone             50000 non-null  str  
+ 35  acarbose                  50000 non-null  str  
+ 36  miglitol                  50000 non-null  str  
+ 37  troglitazone              50000 non-null  str  
+ 38  tolazamide                50000 non-null  str  
+ 39  examide                   50000 non-null  str  
+ 40  citoglipton               50000 non-null  str  
+ 41  insulin                   50000 non-null  str  
+ 42  glyburide_metformin       50000 non-null  str  
+ 43  glipizide_metformin       50000 non-null  str  
+ 44  glimepiride_pioglitazone  50000 non-null  str  
+ 45  metformin_rosiglitazone   50000 non-null  str  
+ 46  metformin_pioglitazone    50000 non-null  str  
+ 47  change                    50000 non-null  str  
+ 48  diabetesMed               50000 non-null  str  
+ 49  readmitted                50000 non-null  str  
+dtypes: int64(13), str(37)
+memory usage: 19.1 MB
+
+
+Statistical Summary:
+                            count          mean           std      min         25%         50%          75%          max
+encounter_id              50000.0  8.300356e+07  4.038201e+07  12522.0  50718952.5  84075780.0  116290402.5  150640602.0
+patient_nbr               50000.0  3.622355e+07  3.479427e+07    135.0   5755014.0  23583528.0   63263547.0  115218441.0
+admission_type_id         50000.0  2.234920e+00  1.626341e+00      1.0         1.0         2.0          3.0          8.0
+discharge_disposition_id  50000.0  4.283760e+00  6.036897e+00      1.0         1.0         1.0          5.0         28.0
+admission_source_id       50000.0  6.327140e+00  4.799014e+00      1.0         1.0         7.0          7.0         20.0
+time_in_hospital          50000.0  4.560240e+00  3.090282e+00      1.0         2.0         4.0          6.0         14.0
+num_lab_procedures        50000.0  4.231132e+01  1.935867e+01      1.0        30.0        43.0         56.0        129.0
+num_procedures            50000.0  1.372360e+00  1.688599e+00      0.0         0.0         1.0          2.0          6.0
+num_medications           50000.0  1.528262e+01  8.127604e+00      1.0        10.0        14.0         19.0         81.0
+number_outpatient         50000.0  2.208000e-01  8.685519e-01      0.0         0.0         0.0          0.0         36.0
+number_emergency          50000.0  1.239800e-01  6.241288e-01      0.0         0.0         0.0          0.0         42.0
+number_inpatient          50000.0  5.824400e-01  1.197444e+00      0.0         0.0         0.0          1.0         21.0
+number_diagnoses          50000.0  6.898860e+00  2.024972e+00      1.0         5.0         7.0          9.0          9.0

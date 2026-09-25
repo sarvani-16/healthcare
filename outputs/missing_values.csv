@@ -1,4 +1,4 @@
-Column,Missing_Count,Missing_Percentage
+Feature,Missing_Count,Missing_Percentage
 encounter_id,0,0.0
 patient_nbr,0,0.0
 race,1257,2.51
@@ -49,4 +49,3 @@ metformin_pioglitazone,0,0.0
 change,0,0.0
 diabetesMed,0,0.0
 readmitted,0,0.0
-Readmission_30_Days,0,0.0

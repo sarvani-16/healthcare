@@ -1,0 +1,11 @@
+VITALSIGN LOGISTIC REGRESSION CLASSIFICATION REPORT
+============================================================
+
+                       precision    recall  f1-score   support
+
+No Readmit / >30d (0)       0.92      0.66      0.77      8851
+  Readmitted <30d (1)       0.17      0.55      0.26      1149
+
+             accuracy                           0.64     10000
+            macro avg       0.54      0.60      0.51     10000
+         weighted avg       0.83      0.64      0.71     10000

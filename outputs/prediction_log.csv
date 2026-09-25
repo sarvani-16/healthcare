@@ -9,3 +9,5 @@ timestamp,predicted_class,probability,risk_category,model_name,time_in_hospital,
 2026-09-19 21:01:47,1,0.54,Moderate Risk,RandomForestClassifier,7,24,65,9,[70-80),Female
 2026-09-19 21:01:47,1,0.78,High Risk,RandomForestClassifier,12,32,80,11,[80-90),Female
 2026-09-19 21:01:49,1,0.5831,Moderate Risk,RandomForestClassifier,6,21,54,9,[70-80),Female
+2026-09-21 11:33:00,0,0.4631,Moderate Risk,RandomForestClassifier,7,16,43,1,[40-50),Male
+2026-09-25 10:33:51,0,0.466,Moderate Risk,Pipeline,4,15,45,7,[60-70),Female

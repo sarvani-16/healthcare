@@ -1,0 +1,2 @@
+Model,Accuracy,Precision,Recall,F1_Score,ROC_AUC
+"Random Forest Classifier (100 Trees, balanced)",0.6365,0.1785,0.6005,0.2752,0.6631
