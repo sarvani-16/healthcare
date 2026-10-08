@@ -1,23 +1,21 @@
-"""
-=============================================================================
-VitalSign / HealthcarePrediction
-Module 2: Missing Value Handling via Deletion and Imputation
-File: clean_del_mean_model_missing_imputer_M2.py
-Dataset: UCI Diabetes 130-US Hospitals (diabetic_data_50000.csv)
-Outputs: outputs/clean_imputed_demo_M2.csv
-=============================================================================
-"""
-
+# ============================================================
+# 1. IMPORT LIBRARIES
+# ============================================================
 import os
-from pathlib import Path
 import pandas as pd
 import numpy as np
+from sklearn.impute import SimpleImputer, MissingIndicator
 
-# Setup Paths
-BASE_DIR = Path(__file__).resolve().parent.parent
-DATASET_PATH = BASE_DIR / "dataset" / "diabetic_data_50000.csv"
-OUTPUT_DIR = BASE_DIR / "outputs"
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+# ============================================================
+# 2. DATASET PATH
+# ============================================================
+DATASET_PATH = r"C:/Users/Manepalli Sarvani/PycharmProjects/Healthcare/dataset/diabetic_data_50000.csv"
+
+# ============================================================
+# 3. OUTPUT FOLDER
+# ============================================================
+OUTPUT_FOLDER = r"C:/Users/Manepalli Sarvani/PycharmProjects/Healthcare/outputs/M2_Preprocessing"
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 COLUMN_NAMES = [
     'encounter_id', 'patient_nbr', 'race', 'gender', 'age', 'weight',
@@ -34,84 +32,132 @@ COLUMN_NAMES = [
     'readmitted'
 ]
 
-def load_healthcare_data():
-    """Loads dataset and replaces '?' missing symbol with NaN."""
-    with open(DATASET_PATH, "r", encoding="utf-8", errors="ignore") as f:
-        first_line = f.readline()
+# ============================================================
+# 4. LOAD DATASET
+# ============================================================
+print("=" * 60)
+print("VITALSIGN - MISSING VALUE TREATMENT COMPARISON (M2)")
+print("=" * 60)
 
-    if "readmitted" in first_line or "encounter_id" in first_line:
-        df = pd.read_csv(DATASET_PATH)
-    else:
-        df = pd.read_csv(DATASET_PATH, header=None, names=COLUMN_NAMES)
+with open(DATASET_PATH, "r", encoding="utf-8", errors="ignore") as f:
+    first_line = f.readline()
 
-    return df.replace("?", np.nan)
+if "readmitted" in first_line or "encounter_id" in first_line:
+    df = pd.read_csv(DATASET_PATH)
+else:
+    df = pd.read_csv(DATASET_PATH, header=None, names=COLUMN_NAMES)
 
-def main():
-    print("=" * 70)
-    print("VITALSIGN: MISSING VALUE DELETION & IMPUTATION (M2)")
-    print("=" * 70)
+data = df.copy()
 
-    # 1. Read Dataset
-    df = load_healthcare_data()
-    print(f"Original Healthcare Dataset Loaded: {df.shape[0]:,} Rows, {df.shape[1]} Columns")
+# ============================================================
+# 5. DATA PREPROCESSING (REPLACE '?' WITH NaN)
+# ============================================================
+data = data.replace("?", np.nan)
+initial_missing = data.isnull().sum()
+print(f"Dataset Shape: {data.shape}")
+print(f"Total Missing Cells Before Cleaning: {initial_missing.sum():,}")
 
-    # Show missing values before any treatment
-    missing_before = df.isnull().sum()
-    print("\n--- Top Missing Values Before Treatment ---")
-    print(missing_before[missing_before > 0].sort_values(ascending=False).to_string())
+# Select a representative numerical column and categorical column
+num_col = 'num_lab_procedures'
+cat_col = 'race'
 
-    # ========================================================
-    # TECHNIQUE A: DELETION DEMONSTRATION (Listwise Row Deletion)
-    # ========================================================
-    print("\n" + "-" * 60)
-    print("TECHNIQUE A: LISTWISE ROW DELETION DEMO")
-    print("-" * 60)
-    df_deleted = df.dropna()
-    print(f"Shape Before Deletion: {df.shape}")
-    print(f"Shape After Deletion:  {df_deleted.shape}")
-    print(f"Rows Dropped:          {len(df) - len(df_deleted):,} ({(len(df)-len(df_deleted))/len(df)*100:.1f}% loss)")
-    print("Insight: Complete row deletion on medical data with sparsely recorded attributes")
-    print("         (such as 'weight' with >96% missingness) causes severe data attrition.")
-    print("         Therefore, targeted feature dropping + imputation is preferable.")
+# Introduce small artificial NaNs in num_col for demonstration if none exist
+demo_data = data[[num_col, cat_col, 'medical_specialty', 'time_in_hospital']].copy()
+demo_data.loc[demo_data.sample(frac=0.05, random_state=42).index, num_col] = np.nan
 
-    # ========================================================
-    # TECHNIQUE B & C: IMPUTATION (Mean/Median for Numeric, Mode for Categorical)
-    # ========================================================
-    print("\n" + "-" * 60)
-    print("TECHNIQUE B & C: STATISTICAL IMPUTATION DEMO")
-    print("-" * 60)
-    df_imputed = df.copy()
+# ============================================================
+# 6. MODEL / ANALYSIS (DEMONSTRATE 6 IMPUTATION TECHNIQUES)
+# ============================================================
+results = []
 
-    # Drop high-missing non-informative columns first
-    cols_to_drop = ['weight', 'payer_code', 'medical_specialty', 'encounter_id', 'patient_nbr']
-    df_imputed = df_imputed.drop(columns=[c for c in cols_to_drop if c in df_imputed.columns])
+# Method 1: Listwise Row Deletion
+data_del = demo_data.dropna()
+results.append({
+    'Method': 'Listwise Row Deletion',
+    'Feature': 'All Demo Features',
+    'Original_Missing': int(demo_data.isnull().sum().sum()),
+    'Remaining_Rows': len(data_del),
+    'Data_Loss_Percent': round((1 - len(data_del) / len(demo_data)) * 100, 2),
+    'Strategy_Type': 'Deletion'
+})
 
-    num_cols = df_imputed.select_dtypes(include=np.number).columns.tolist()
-    cat_cols = df_imputed.select_dtypes(exclude=np.number).columns.tolist()
+# Method 2: Mean Imputation (Numerical)
+mean_imputer = SimpleImputer(strategy='mean')
+mean_imputed = mean_imputer.fit_transform(demo_data[[num_col]])
+results.append({
+    'Method': 'Mean Imputation',
+    'Feature': num_col,
+    'Original_Missing': int(demo_data[num_col].isnull().sum()),
+    'Remaining_Rows': len(demo_data),
+    'Data_Loss_Percent': 0.0,
+    'Strategy_Type': 'Statistical Imputation'
+})
 
-    # B. Numerical Median Imputation
-    for col in num_cols:
-        if df_imputed[col].isnull().sum() > 0:
-            median_val = df_imputed[col].median()
-            df_imputed[col] = df_imputed[col].fillna(median_val)
-            print(f"  [Numerical] Imputed {col} with Median = {median_val}")
+# Method 3: Median Imputation (Numerical - Robust to Outliers)
+median_imputer = SimpleImputer(strategy='median')
+median_imputed = median_imputer.fit_transform(demo_data[[num_col]])
+results.append({
+    'Method': 'Median Imputation',
+    'Feature': num_col,
+    'Original_Missing': int(demo_data[num_col].isnull().sum()),
+    'Remaining_Rows': len(demo_data),
+    'Data_Loss_Percent': 0.0,
+    'Strategy_Type': 'Statistical Imputation'
+})
 
-    # C. Categorical Most-Frequent (Mode) Imputation
-    for col in cat_cols:
-        if df_imputed[col].isnull().sum() > 0:
-            mode_val = df_imputed[col].mode(dropna=True)[0]
-            df_imputed[col] = df_imputed[col].fillna(mode_val)
-            print(f"  [Categorical] Imputed {col} with Mode = '{mode_val}'")
+# Method 4: Most Frequent / Mode Imputation (Categorical)
+mode_imputer = SimpleImputer(strategy='most_frequent')
+mode_imputed = mode_imputer.fit_transform(demo_data[[cat_col]])
+results.append({
+    'Method': 'Most Frequent (Mode)',
+    'Feature': cat_col,
+    'Original_Missing': int(demo_data[cat_col].isnull().sum()),
+    'Remaining_Rows': len(demo_data),
+    'Data_Loss_Percent': 0.0,
+    'Strategy_Type': 'Categorical Imputation'
+})
 
-    missing_after = df_imputed.isnull().sum().sum()
-    print(f"\nTotal Missing Values After Imputation: {missing_after}")
-    print(f"Cleaned Imputed Shape:                 {df_imputed.shape}")
+# Method 5: Constant Imputation ('Missing_Not_Recorded')
+const_imputer = SimpleImputer(strategy='constant', fill_value='Missing_Not_Recorded')
+const_imputed = const_imputer.fit_transform(demo_data[['medical_specialty']])
+results.append({
+    'Method': 'Constant Flag Imputation',
+    'Feature': 'medical_specialty',
+    'Original_Missing': int(demo_data['medical_specialty'].isnull().sum()),
+    'Remaining_Rows': len(demo_data),
+    'Data_Loss_Percent': 0.0,
+    'Strategy_Type': 'Domain Heuristic'
+})
 
-    # Save small processed demo
-    out_csv = OUTPUT_DIR / "clean_imputed_demo_M2.csv"
-    df_imputed.head(1000).to_csv(out_csv, index=False)
-    print(f"\n[OK] Saved 1,000 imputed demo records to: {out_csv}")
-    print("=" * 70)
+# Method 6: Missing Indicator Feature Flag
+indicator = MissingIndicator()
+missing_flags = indicator.fit_transform(demo_data[[num_col]])
+results.append({
+    'Method': 'Missing Indicator Flag',
+    'Feature': f"{num_col}_was_missing",
+    'Original_Missing': int(demo_data[num_col].isnull().sum()),
+    'Remaining_Rows': len(demo_data),
+    'Data_Loss_Percent': 0.0,
+    'Strategy_Type': 'Binary Indicator'
+})
 
-if __name__ == "__main__":
-    main()
+# ============================================================
+# 7. EVALUATION / SUMMARY
+# ============================================================
+comparison_df = pd.DataFrame(results)
+print("\n--- MISSING VALUE TREATMENT COMPARISON TABLE ---")
+print(comparison_df.to_string(index=False))
+
+# ============================================================
+# 8. SAVE RESULTS
+# ============================================================
+csv_out_path = os.path.join(OUTPUT_FOLDER, "missing_value_methods.csv")
+comparison_df.to_csv(csv_out_path, index=False)
+print(f"\n[OK] Comparison results saved to: {csv_out_path}")
+
+# ============================================================
+# 9. FINAL OUTPUT
+# ============================================================
+print("=" * 60)
+print("VITALSIGN: MISSING VALUE IMPUTATION DEMO COMPLETED")
+print("=" * 60)

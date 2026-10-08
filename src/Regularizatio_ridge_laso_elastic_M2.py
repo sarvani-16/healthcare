@@ -1,10 +1,12 @@
 """
-=============================================================================
-VITALSIGN: REGULARIZATION - RIDGE, LASSO, & ELASTIC NET (M2)
-=============================================================================
+VITALSIGN HEALTHCARE PREDICTION
+Regularizatio_ridge_laso_elastic_M2.py
+Wraps Regularization_ridge_laso_elastic_M2.py.
 """
-
-from Regularization_ridge_laso_elastic_M2 import main
+import subprocess
+import sys
+from pathlib import Path
 
 if __name__ == "__main__":
-    main()
+    target = Path(__file__).parent / "Regularization_ridge_laso_elastic_M2.py"
+    subprocess.run([sys.executable, str(target)], check=True)

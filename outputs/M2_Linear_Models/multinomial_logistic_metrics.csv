@@ -1,0 +1,2 @@
+Model,Accuracy,Macro_Precision,Macro_Recall,Macro_F1
+Multinomial Logistic Regression (3-Class),0.57,0.4848,0.3868,0.357

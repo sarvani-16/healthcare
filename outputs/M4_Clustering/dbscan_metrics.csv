@@ -1,0 +1,2 @@
+Algorithm,eps,min_samples,Clusters_Formed,Noise_Outliers,Noise_Percentage,Silhouette_Core_Points
+DBSCAN,1.2,10,1,52,1.04,0.0

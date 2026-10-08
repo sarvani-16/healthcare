@@ -1,10 +1,12 @@
 """
-=============================================================================
-VITALSIGN: FEATURE SCALING - MINMAX & STANDARD SCALER (M2)
-=============================================================================
+VITALSIGN HEALTHCARE PREDICTION
+clean_minmax_stand_norma_M2..py
+Wraps clean_minmax_stand_norma_M2.py.
 """
-
-from clean_minmax_stand_norma_M2 import main
+import subprocess
+import sys
+from pathlib import Path
 
 if __name__ == "__main__":
-    main()
+    target = Path(__file__).parent / "clean_minmax_stand_norma_M2.py"
+    subprocess.run([sys.executable, str(target)], check=True)

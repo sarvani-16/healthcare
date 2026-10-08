@@ -1,29 +1,24 @@
-"""
-=============================================================================
-VitalSign / HealthcarePrediction
-Module 1: Correlation Matrix, Heatmap & Boxplots Analysis
-File: Correlation_Matrix_heatmap_boxplots_M1.py
-Dataset: UCI Diabetes 130-US Hospitals (diabetic_data_50000.csv)
-Target: Readmission_30_Days (<30 -> 1, >=30 / NO -> 0)
-Outputs: outputs/Boxplots_Correlation/
-=============================================================================
-"""
-
+# ============================================================
+# 1. IMPORT LIBRARIES
+# ============================================================
 import os
-from pathlib import Path
-import numpy as np
 import pandas as pd
-
+import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Setup Paths
-BASE_DIR = Path(__file__).resolve().parent.parent
-DATASET_PATH = BASE_DIR / "dataset" / "diabetic_data_50000.csv"
-OUTPUT_DIR = BASE_DIR / "outputs" / "Boxplots_Correlation"
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+# ============================================================
+# 2. DATASET PATH
+# ============================================================
+DATASET_PATH = r"C:/Users/Manepalli Sarvani/PycharmProjects/Healthcare/dataset/diabetic_data_50000.csv"
+
+# ============================================================
+# 3. OUTPUT FOLDER
+# ============================================================
+OUTPUT_FOLDER = r"C:/Users/Manepalli Sarvani/PycharmProjects/Healthcare/outputs/M1_Dataset_EDA"
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 COLUMN_NAMES = [
     'encounter_id', 'patient_nbr', 'race', 'gender', 'age', 'weight',
@@ -40,93 +35,85 @@ COLUMN_NAMES = [
     'readmitted'
 ]
 
-def load_healthcare_data():
-    """Loads dataset and formulates binary Readmission_30_Days target."""
-    with open(DATASET_PATH, "r", encoding="utf-8", errors="ignore") as f:
-        first_line = f.readline()
+# ============================================================
+# 4. LOAD DATASET
+# ============================================================
+print("=" * 60)
+print("VITALSIGN - CORRELATION MATRIX & BOXPLOT ANALYSIS (M1)")
+print("=" * 60)
 
-    if "readmitted" in first_line or "encounter_id" in first_line:
-        df = pd.read_csv(DATASET_PATH)
-    else:
-        df = pd.read_csv(DATASET_PATH, header=None, names=COLUMN_NAMES)
+with open(DATASET_PATH, "r", encoding="utf-8", errors="ignore") as f:
+    first_line = f.readline()
 
-    df = df.replace("?", np.nan)
-    df["Readmission_30_Days"] = df["readmitted"].astype(str).str.strip().eq("<30").astype(int)
-    return df
+if "readmitted" in first_line or "encounter_id" in first_line:
+    df = pd.read_csv(DATASET_PATH)
+else:
+    df = pd.read_csv(DATASET_PATH, header=None, names=COLUMN_NAMES)
 
-def main():
-    print("=" * 70)
-    print("VITALSIGN: CORRELATION MATRIX & BOXPLOTS ANALYSIS (M1)")
-    print("=" * 70)
+data = df.copy()
 
-    # 1. Load dataset
-    df = load_healthcare_data()
-    print(f"Dataset Loaded Successfully: {df.shape[0]:,} Rows, {df.shape[1]} Columns")
+# ============================================================
+# 5. DATA PREPROCESSING
+# ============================================================
+data = data.replace("?", np.nan)
+data['Readmission_30_Days'] = (data['readmitted'] == '<30').astype(int)
 
-    # 2. Select numerical columns (excluding patient identifiers)
-    excluded_cols = ['encounter_id', 'patient_nbr']
-    numerical_cols = [c for c in df.select_dtypes(include=[np.number]).columns if c not in excluded_cols]
-    print(f"\nNumerical Columns Selected for Correlation ({len(numerical_cols)}):")
-    print(numerical_cols)
+# ============================================================
+# 6. MODEL / ANALYSIS (CORRELATION MATRIX)
+# ============================================================
+num_cols = [
+    'admission_type_id', 'discharge_disposition_id', 'admission_source_id',
+    'time_in_hospital', 'num_lab_procedures', 'num_procedures',
+    'num_medications', 'number_outpatient', 'number_emergency',
+    'number_inpatient', 'number_diagnoses', 'Readmission_30_Days'
+]
 
-    # 3. Compute Correlation Matrix
-    corr_matrix = df[numerical_cols].corr()
-    print("\n--- Correlation Matrix ---")
-    print(corr_matrix.round(3))
+corr_matrix = data[num_cols].corr()
+print("\n--- PEARSON CORRELATION MATRIX ---")
+print(corr_matrix.round(3))
 
-    # Save Correlation Matrix CSV
-    corr_csv_path = OUTPUT_DIR / "Correlation_Matrix.csv"
-    corr_matrix.to_csv(corr_csv_path)
-    print(f"\n[OK] Saved Correlation Matrix CSV: {corr_csv_path}")
+# ============================================================
+# 7. EVALUATION / VISUALIZATION
+# ============================================================
+# 1. Correlation Heatmap
+plt.figure(figsize=(10, 8))
+sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm", cbar=True, square=True)
+plt.title("Numerical Features Correlation Heatmap", fontsize=13, fontweight="bold")
+plt.tight_layout()
+heatmap_path = os.path.join(OUTPUT_FOLDER, "Correlation_Heatmap.png")
+plt.savefig(heatmap_path, dpi=300)
+plt.close()
 
-    # 4. Generate Correlation Heatmap
-    print("\nGenerating Correlation Heatmap...")
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(
-        corr_matrix,
-        annot=True,
-        cmap="coolwarm",
-        fmt=".2f",
-        vmin=-1,
-        vmax=1,
-        square=True,
-        linewidths=0.5,
-        cbar_kws={"shrink": 0.8}
-    )
-    plt.title("VitalSign Healthcare - Numerical Features Correlation Heatmap", fontsize=13, fontweight="bold", pad=12)
-    heatmap_path = OUTPUT_DIR / "Correlation_Heatmap.png"
-    plt.savefig(heatmap_path, dpi=200, bbox_inches="tight")
-    plt.close()
-    print(f"[OK] Saved Correlation Heatmap: {heatmap_path}")
+# 2. Boxplots of Numerical Features vs Target
+fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+key_features = ['time_in_hospital', 'num_medications', 'number_inpatient', 'num_lab_procedures']
 
-    # 5. Produce Boxplots for Numerical Features vs Readmission_30_Days
-    print("\nGenerating Boxplots: Numerical Features vs Readmission_30_Days...")
-    target_col = "Readmission_30_Days"
-    features_to_plot = [c for c in numerical_cols if c != target_col]
+for ax, feat in zip(axes.flatten(), key_features):
+    sns.boxplot(x='Readmission_30_Days', y=feat, data=data, hue='Readmission_30_Days',
+                palette=['#3b82f6', '#ef4444'], ax=ax, legend=False)
+    ax.set_title(f"{feat} vs Readmission_30_Days", fontweight="bold", fontsize=11)
+    ax.set_xlabel("Readmission Class (0:No, 1:<30d)")
+    ax.set_ylabel(feat)
 
-    for col in features_to_plot:
-        plt.figure(figsize=(6, 5))
-        sns.boxplot(
-            x=target_col,
-            y=col,
-            data=df,
-            palette=["#3b82f6", "#ef4444"],
-            hue=target_col,
-            legend=False
-        )
-        plt.title(f"{col} vs Readmission_30_Days", fontsize=12, fontweight="bold", pad=10)
-        plt.xlabel("Readmitted <30 Days (0 = No/Late, 1 = Yes)", fontweight="bold")
-        plt.ylabel(col, fontweight="bold")
-        plt.xticks([0, 1], ["No / >30d (0)", "Readmitted <30d (1)"])
+plt.suptitle("Clinical Feature Distributions Stratified by 30-Day Readmission", fontsize=13, fontweight="bold")
+plt.tight_layout()
+boxplot_path = os.path.join(OUTPUT_FOLDER, "Boxplots.png")
+plt.savefig(boxplot_path, dpi=300)
+plt.close()
 
-        boxplot_path = OUTPUT_DIR / f"Boxplot_{col}_vs_{target_col}.png"
-        plt.savefig(boxplot_path, dpi=200, bbox_inches="tight")
-        plt.close()
-        print(f"  [OK] Saved boxplot: {boxplot_path.name}")
+# ============================================================
+# 8. SAVE RESULTS
+# ============================================================
+csv_path = os.path.join(OUTPUT_FOLDER, "correlation_matrix.csv")
+corr_matrix.to_csv(csv_path)
 
-    print("\n" + "=" * 70)
-    print(f"All correlation & boxplot tasks completed. Outputs saved to: {OUTPUT_DIR}")
-    print("=" * 70)
+print(f"\n[OK] Correlation matrix CSV saved to: {csv_path}")
+print(f"[OK] Correlation heatmap saved to:   {heatmap_path}")
+print(f"[OK] Numerical boxplots saved to:       {boxplot_path}")
 
-if __name__ == "__main__":
-    main()
+# ============================================================
+# 9. FINAL OUTPUT
+# ============================================================
+print("=" * 60)
+print("VITALSIGN: CORRELATION & BOXPLOT ANALYSIS COMPLETED")
+print("=" * 60)

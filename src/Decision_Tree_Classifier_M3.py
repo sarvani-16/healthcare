@@ -1,27 +1,10 @@
-"""
-=============================================================================
-VITALSIGN: DECISION TREE CLASSIFIER (M3)
-Dataset: UCI Diabetes 130-US Hospitals (diabetic_data_50000.csv)
-Target: Readmission_30_Days (0 = No Readmit / >30d, 1 = Readmitted <30d)
-=============================================================================
-
-ML Concept - Decision Tree Classification:
-Partitions clinical feature space into axis-aligned rectangular decision regions
-using recursive binary splitting. At each node, the feature and threshold that
-maximize impurity reduction (Gini impurity or Entropy) are selected:
-    Gini = 1 - sum_{k=1}^K p_k^2
-
-CLINICAL INTERPRETABILITY:
-Decision Trees mirror clinical pathways and diagnosis protocols. Tree depth is
-regularized (max_depth=10, min_samples_split=20) to prevent overfitting to noisy
-patient charts while retaining tree interpretability.
-=============================================================================
-"""
-
+# ============================================================
+# 1. IMPORT LIBRARIES
+# ============================================================
 import os
-from pathlib import Path
 import pandas as pd
 import numpy as np
+import joblib
 
 import matplotlib
 matplotlib.use("Agg")
@@ -39,10 +22,18 @@ from sklearn.metrics import (
     roc_auc_score, classification_report, confusion_matrix
 )
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-DATASET_PATH = BASE_DIR / "dataset" / "diabetic_data_50000.csv"
-OUTPUT_DIR = BASE_DIR / "outputs" / "Decision_Tree"
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+# ============================================================
+# 2. DATASET PATH
+# ============================================================
+DATASET_PATH = r"C:/Users/Manepalli Sarvani/PycharmProjects/Healthcare/dataset/diabetic_data_50000.csv"
+
+# ============================================================
+# 3. OUTPUT FOLDER
+# ============================================================
+OUTPUT_FOLDER = r"C:/Users/Manepalli Sarvani/PycharmProjects/Healthcare/outputs/M3_Tree_Models"
+MODELS_DIR = r"C:/Users/Manepalli Sarvani/PycharmProjects/Healthcare/models"
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+os.makedirs(MODELS_DIR, exist_ok=True)
 
 COLUMN_NAMES = [
     'encounter_id', 'patient_nbr', 'race', 'gender', 'age', 'weight',
@@ -61,156 +52,210 @@ COLUMN_NAMES = [
 
 DROP_COLUMNS = [
     'encounter_id', 'patient_nbr', 'readmitted',
-    'weight', 'payer_code', 'medical_specialty'
+    'weight', 'payer_code', 'medical_specialty',
+    'diag_1', 'diag_2', 'diag_3'
 ]
 
-def load_data():
-    with open(DATASET_PATH, "r", encoding="utf-8", errors="ignore") as f:
-        first_line = f.readline()
-    if "readmitted" in first_line or "encounter_id" in first_line:
-        df = pd.read_csv(DATASET_PATH)
-    else:
-        df = pd.read_csv(DATASET_PATH, header=None, names=COLUMN_NAMES)
-    return df.replace("?", np.nan)
+# ============================================================
+# 4. LOAD DATASET
+# ============================================================
+print("=" * 60)
+print("VITALSIGN - DECISION TREE CLASSIFIER (M3)")
+print("=" * 60)
 
-def main():
-    print("=" * 70)
-    print("VITALSIGN: DECISION TREE CLASSIFIER (M3)")
-    print("=" * 70)
+with open(DATASET_PATH, "r", encoding="utf-8", errors="ignore") as f:
+    first_line = f.readline()
 
-    # 1. Load data and create target
-    df = load_data()
-    df['Readmission_30_Days'] = (df['readmitted'] == '<30').astype(int)
-    print(f"Dataset Loaded: {len(df):,} Rows, {df.shape[1]} Columns")
-    print(f"Target Distribution: Readmission Rate = {df['Readmission_30_Days'].mean():.2%}")
+if "readmitted" in first_line or "encounter_id" in first_line:
+    df = pd.read_csv(DATASET_PATH)
+else:
+    df = pd.read_csv(DATASET_PATH, header=None, names=COLUMN_NAMES)
 
-    X = df.drop(columns=[c for c in DROP_COLUMNS if c in df.columns] + ['Readmission_30_Days'])
-    y = df['Readmission_30_Days']
+data = df.copy()
 
-    num_cols = X.select_dtypes(include=[np.number]).columns.tolist()
-    cat_cols = X.select_dtypes(exclude=[np.number]).columns.tolist()
+# ============================================================
+# 5. DATA PREPROCESSING (TARGET CREATION & STRATIFIED SPLIT)
+# ============================================================
+data = data.replace("?", np.nan)
+data['Readmission_30_Days'] = (data['readmitted'] == '<30').astype(int)
 
-    # 2. Train/Test split
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.20, random_state=42, stratify=y
+X = data.drop(columns=[c for c in DROP_COLUMNS if c in data.columns] + ['Readmission_30_Days'])
+y = data['Readmission_30_Days']
+
+num_cols = X.select_dtypes(include=[np.number]).columns.tolist()
+cat_cols = X.select_dtypes(exclude=[np.number]).columns.tolist()
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.20, random_state=42, stratify=y
+)
+
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', SimpleImputer(strategy='median'), num_cols),
+        ('cat', Pipeline([
+            ('imputer', SimpleImputer(strategy='most_frequent')),
+            ('encoder', OneHotEncoder(sparse_output=False, handle_unknown='ignore'))
+        ]), cat_cols)
+    ]
+)
+
+# Fit preprocessor on training data
+X_train_trans = preprocessor.fit_transform(X_train)
+X_test_trans = preprocessor.transform(X_test)
+
+# ============================================================
+# 6. MODEL / ANALYSIS (TREE DEPTH COMPARISON & TRAINING)
+# ============================================================
+print("\n[1] Evaluating Decision Tree Max Depth Performance...")
+depths = [3, 5, 8, 10, 15, None]
+depth_labels = ['3', '5', '8', '10', '15', 'None (Full)']
+train_f1s = []
+test_f1s = []
+
+for d in depths:
+    dt_temp = DecisionTreeClassifier(
+        max_depth=d,
+        min_samples_split=20,
+        class_weight='balanced',
+        random_state=42
     )
-    print(f"Data Split: Train = {len(X_train):,} encounters, Test = {len(X_test):,} encounters")
+    dt_temp.fit(X_train_trans, y_train)
+    tr_pred = dt_temp.predict(X_train_trans)
+    te_pred = dt_temp.predict(X_test_trans)
+    train_f1s.append(f1_score(y_train, tr_pred))
+    test_f1s.append(f1_score(y_test, te_pred))
+    print(f"    Depth: {str(d):>10} | Train F1: {train_f1s[-1]:.4f} | Test F1: {test_f1s[-1]:.4f}")
 
-    # 3. Construct Pipeline
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ('num', SimpleImputer(strategy='median'), num_cols),
-            ('cat', Pipeline([
-                ('imputer', SimpleImputer(strategy='most_frequent')),
-                ('encoder', OneHotEncoder(sparse_output=False, handle_unknown='ignore'))
-            ]), cat_cols)
-        ]
-    )
+# Train Best Decision Tree Model Pipeline (depth=10)
+best_dt = DecisionTreeClassifier(
+    max_depth=10,
+    min_samples_split=20,
+    class_weight='balanced',
+    random_state=42
+)
 
-    clf_pipeline = Pipeline([
-        ('preprocessor', preprocessor),
-        ('classifier', DecisionTreeClassifier(
-            max_depth=10,
-            min_samples_split=20,
-            class_weight='balanced',
-            random_state=42
-        ))
-    ])
+dt_pipeline = Pipeline([
+    ('preprocessor', preprocessor),
+    ('classifier', best_dt)
+])
 
-    print("\n[1] Training Decision Tree Classifier...")
-    clf_pipeline.fit(X_train, y_train)
+print("\n[2] Training Best Decision Tree Pipeline (max_depth=10, min_samples_split=20)...")
+dt_pipeline.fit(X_train, y_train)
 
-    # 4. Evaluation
-    print("\n[2] Evaluating Model on Holdout Test Set (10,000 Records)...")
-    y_pred = clf_pipeline.predict(X_test)
-    y_prob = clf_pipeline.predict_proba(X_test)[:, 1]
+# ============================================================
+# 7. EVALUATION / PERFORMANCE METRICS
+# ============================================================
+y_pred = dt_pipeline.predict(X_test)
+y_prob = dt_pipeline.predict_proba(X_test)[:, 1]
 
-    acc = accuracy_score(y_test, y_pred)
-    prec = precision_score(y_test, y_pred, zero_division=0)
-    rec = recall_score(y_test, y_pred)
-    f1 = f1_score(y_test, y_pred)
-    auc = roc_auc_score(y_test, y_prob)
+acc = accuracy_score(y_test, y_pred)
+prec = precision_score(y_test, y_pred, zero_division=0)
+rec = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_prob)
 
-    print("\n[3] PERFORMANCE METRICS:")
-    print(f"    Accuracy:        {acc:.4f} ({acc:.2%})")
-    print(f"    Precision:       {prec:.4f}")
-    print(f"    Recall (Sens):   {rec:.4f} ({rec:.2%})")
-    print(f"    F1-Score:        {f1:.4f}")
-    print(f"    ROC-AUC Score:   {auc:.4f}")
+print("\n--- PERFORMANCE METRICS ---")
+print(f"Accuracy:        {acc:.4f} ({acc:.2%})")
+print(f"Precision:       {prec:.4f}")
+print(f"Recall (Sens):   {rec:.4f} ({rec:.2%})")
+print(f"F1-Score:        {f1:.4f}")
+print(f"ROC-AUC Score:   {auc:.4f}")
 
-    cls_report = classification_report(
-        y_test, y_pred,
-        target_names=["No Readmit / >30d (0)", "Readmitted <30d (1)"]
-    )
-    print("\n--- CLASSIFICATION REPORT ---")
-    print(cls_report)
+cls_report = classification_report(
+    y_test, y_pred,
+    target_names=["No Readmission / >30d (0)", "Readmitted <30d (1)"]
+)
+print("\n--- CLASSIFICATION REPORT ---")
+print(cls_report)
 
-    # Save Classification Report
-    report_file = OUTPUT_DIR / "classification_report.txt"
-    with open(report_file, "w", encoding="utf-8") as f:
-        f.write("VITALSIGN DECISION TREE CLASSIFICATION REPORT\n")
-        f.write("=" * 60 + "\n\n")
-        f.write(cls_report)
-    print(f"[OK] Classification report saved to: {report_file}")
+# ============================================================
+# 8. SAVE RESULTS (GRAPHS, METRICS, MODEL)
+# ============================================================
+# 1. Tree Depth Comparison Graph
+plt.figure(figsize=(8, 5))
+x_idx = np.arange(len(depths))
+plt.plot(x_idx, train_f1s, 'o--', color='#2563eb', label='Train F1 Score (Fitting)')
+plt.plot(x_idx, test_f1s, 's-', color='#dc2626', linewidth=2, label='Test F1 Score (Generalization)')
+plt.xticks(x_idx, depth_labels)
+plt.xlabel("Max Depth Hyperparameter", fontsize=10)
+plt.ylabel("F1-Score", fontsize=10)
+plt.title("Decision Tree Depth Comparison (Overfitting vs Generalization)", fontsize=12, fontweight="bold")
+plt.legend()
+plt.grid(True, linestyle="--", alpha=0.5)
+plt.tight_layout()
+depth_png = os.path.join(OUTPUT_FOLDER, "Decision_Tree_Depth_Comparison.png")
+plt.savefig(depth_png, dpi=300)
+plt.close()
 
-    # Save Metrics CSV
-    metrics_df = pd.DataFrame([{
-        'Model': 'Decision Tree (max_depth=10, balanced)',
-        'Accuracy': round(acc, 4),
-        'Precision': round(prec, 4),
-        'Recall': round(rec, 4),
-        'F1_Score': round(f1, 4),
-        'ROC_AUC': round(auc, 4)
-    }])
-    metrics_file = OUTPUT_DIR / "metrics.csv"
-    metrics_df.to_csv(metrics_file, index=False)
-    print(f"[OK] Metrics table saved to: {metrics_file}")
+# 2. Confusion Matrix Heatmap
+cm = confusion_matrix(y_test, y_pred)
+plt.figure(figsize=(6, 5))
+sns.heatmap(
+    cm, annot=True, fmt=",d", cmap="Greens", cbar=False,
+    xticklabels=["No Readmit (0)", "Readmitted (1)"],
+    yticklabels=["No Readmit (0)", "Readmitted (1)"]
+)
+plt.title("Decision Tree Confusion Matrix", fontsize=12, fontweight="bold")
+plt.xlabel("Predicted Clinical Label")
+plt.ylabel("Actual Clinical Label")
+plt.tight_layout()
+cm_png = os.path.join(OUTPUT_FOLDER, "Decision_Tree_Confusion_Matrix.png")
+plt.savefig(cm_png, dpi=300)
+plt.close()
 
-    # Confusion Matrix Heatmap
-    cm = confusion_matrix(y_test, y_pred)
-    plt.figure(figsize=(6, 5))
-    sns.heatmap(
-        cm, annot=True, fmt=",d", cmap="Greens", cbar=False,
-        xticklabels=["No Readmit (0)", "Readmitted (1)"],
-        yticklabels=["No Readmit (0)", "Readmitted (1)"]
-    )
-    plt.title("Decision Tree Confusion Matrix", fontsize=12, fontweight="bold")
-    plt.xlabel("Predicted Clinical Label", fontsize=10)
-    plt.ylabel("Actual Clinical Label", fontsize=10)
-    plt.tight_layout()
+# 3. Feature Importance Bar Plot
+cat_encoder = preprocessor.named_transformers_['cat'].named_steps['encoder']
+feature_names = num_cols + list(cat_encoder.get_feature_names_out(cat_cols))
+importances = best_dt.feature_importances_
 
-    cm_file = OUTPUT_DIR / "confusion_matrix.png"
-    plt.savefig(cm_file, dpi=300)
-    plt.close()
-    print(f"[OK] Confusion matrix plot saved to: {cm_file}")
+feat_df = pd.DataFrame({
+    'Feature': feature_names,
+    'Importance': importances
+}).sort_values(by='Importance', ascending=False)
 
-    # Feature Importances
-    dt_model = clf_pipeline.named_steps['classifier']
-    feature_names = num_cols + list(clf_pipeline.named_steps['preprocessor'].named_transformers_['cat'].named_steps['encoder'].get_feature_names_out(cat_cols))
-    importances = dt_model.feature_importances_
+top15_feat = feat_df.head(15)
+plt.figure(figsize=(9, 5))
+sns.barplot(data=top15_feat, x='Importance', y='Feature', palette='crest')
+plt.title("Decision Tree Top 15 Predictive Features", fontsize=12, fontweight="bold")
+plt.xlabel("Gini Feature Importance")
+plt.tight_layout()
+feat_png = os.path.join(OUTPUT_FOLDER, "Decision_Tree_Feature_Importance.png")
+plt.savefig(feat_png, dpi=300)
+plt.close()
 
-    feat_df = pd.DataFrame({
-        'Feature': feature_names,
-        'Importance': importances
-    }).sort_values(by='Importance', ascending=False)
+# 4. Save Metrics CSV
+metrics_df = pd.DataFrame([{
+    'Model': 'Decision Tree (max_depth=10, balanced)',
+    'Accuracy': round(acc, 4),
+    'Precision': round(prec, 4),
+    'Recall': round(rec, 4),
+    'F1_Score': round(f1, 4),
+    'ROC_AUC': round(auc, 4)
+}])
+metrics_csv = os.path.join(OUTPUT_FOLDER, "decision_tree_metrics.csv")
+metrics_df.to_csv(metrics_csv, index=False)
 
-    top15_feat = feat_df.head(15)
-    print("\n--- TOP 10 CLINICAL PREDICTIVE FEATURES (Decision Tree) ---")
-    print(top15_feat.head(10).to_string(index=False))
+# 5. Save Classification Report
+report_txt = os.path.join(OUTPUT_FOLDER, "Decision_Tree_Classification_Report.txt")
+with open(report_txt, "w", encoding="utf-8") as f:
+    f.write("VITALSIGN DECISION TREE CLASSIFICATION REPORT\n")
+    f.write("=" * 60 + "\n\n")
+    f.write(cls_report)
 
-    top15_feat.to_csv(OUTPUT_DIR / "feature_importance.csv", index=False)
+# 6. Save Model Artifact
+model_save_path = os.path.join(MODELS_DIR, "decision_tree_healthcare.pkl")
+joblib.dump(dt_pipeline, model_save_path)
 
-    plt.figure(figsize=(9, 5))
-    sns.barplot(data=top15_feat, x='Importance', y='Feature', palette='crest')
-    plt.title("Decision Tree Top 15 Predictive Features", fontsize=12, fontweight="bold")
-    plt.xlabel("Gini Feature Importance", fontsize=10)
-    plt.tight_layout()
+print(f"\n[OK] Depth comparison graph saved to: {depth_png}")
+print(f"[OK] Confusion matrix saved to:        {cm_png}")
+print(f"[OK] Feature importance plot saved to: {feat_png}")
+print(f"[OK] Metrics table saved to:           {metrics_csv}")
+print(f"[OK] Classification report saved to:   {report_txt}")
+print(f"[OK] Trained model saved to:           {model_save_path}")
 
-    feat_png = OUTPUT_DIR / "feature_importance.png"
-    plt.savefig(feat_png, dpi=300)
-    plt.close()
-    print(f"[OK] Feature importance plot saved to: {feat_png}")
-    print("=" * 70)
-
-if __name__ == "__main__":
-    main()
+# ============================================================
+# 9. FINAL OUTPUT
+# ============================================================
+print("=" * 60)
+print("VITALSIGN: DECISION TREE CLASSIFIER COMPLETED")
+print("=" * 60)

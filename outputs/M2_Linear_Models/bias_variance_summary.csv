@@ -1,0 +1,7 @@
+max_depth,Train_Accuracy,Validation_Accuracy,Train_F1,Validation_F1,Diagnosis
+1,0.6781,0.6854,0.2517,0.2656,High Bias (Underfitting)
+2,0.5321,0.5376,0.2462,0.2544,Underfitting
+3,0.5997,0.6058,0.2519,0.2585,Balanced Generalization
+5,0.5979,0.6009,0.2558,0.2573,Optimal Depth (Sweet Spot)
+10,0.6261,0.6043,0.2884,0.2367,Beginning Overfitting
+None (Unlimited),0.9929,0.7985,0.9702,0.1527,High Variance (Severe Overfitting)

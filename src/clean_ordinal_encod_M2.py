@@ -1,12 +1,12 @@
 """
-=============================================================================
-VITALSIGN: ORDINAL ENCODING DEMONSTRATION (M2)
-Dataset: UCI Diabetes 130-US Hospitals (diabetic_data_50000.csv)
-Feature: age brackets with natural ordered progression [0-10) to [90-100)
-=============================================================================
+VITALSIGN HEALTHCARE PREDICTION
+clean_ordinal_encod_M2.py
+Wraps clean_ordinal_encode_M2.py.
 """
-
-from clean_ordinal_encode_M2 import main
+import subprocess
+import sys
+from pathlib import Path
 
 if __name__ == "__main__":
-    main()
+    target = Path(__file__).parent / "clean_ordinal_encode_M2.py"
+    subprocess.run([sys.executable, str(target)], check=True)

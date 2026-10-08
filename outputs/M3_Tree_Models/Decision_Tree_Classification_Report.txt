@@ -1,0 +1,11 @@
+VITALSIGN DECISION TREE CLASSIFICATION REPORT
+============================================================
+
+                           precision    recall  f1-score   support
+
+No Readmission / >30d (0)       0.92      0.60      0.73      8851
+      Readmitted <30d (1)       0.16      0.59      0.25      1149
+
+                 accuracy                           0.60     10000
+                macro avg       0.54      0.60      0.49     10000
+             weighted avg       0.83      0.60      0.67     10000

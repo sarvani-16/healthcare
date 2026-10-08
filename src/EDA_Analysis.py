@@ -1,28 +1,24 @@
-"""
-=============================================================================
-VitalSign / HealthcarePrediction
-Module 1: Exploratory Data Analysis (EDA)
-File: EDA_Analysis.py
-Dataset: UCI Diabetes 130-US Hospitals (diabetic_data_50000.csv)
-Target: Readmission_30_Days (<30 -> 1, >30 or NO -> 0)
-=============================================================================
-"""
-
+# ============================================================
+# 1. IMPORT LIBRARIES
+# ============================================================
 import os
-from pathlib import Path
 import pandas as pd
 import numpy as np
-
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Setup Paths
-BASE_DIR = Path(__file__).resolve().parent.parent
-DATASET_PATH = BASE_DIR / "dataset" / "diabetic_data_50000.csv"
-OUTPUT_DIR = BASE_DIR / "outputs" / "VitalSign_EDA_Analysis"
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+# ============================================================
+# 2. DATASET PATH
+# ============================================================
+DATASET_PATH = r"C:/Users/Manepalli Sarvani/PycharmProjects/Healthcare/dataset/diabetic_data_50000.csv"
+
+# ============================================================
+# 3. OUTPUT FOLDER
+# ============================================================
+OUTPUT_FOLDER = r"C:/Users/Manepalli Sarvani/PycharmProjects/Healthcare/outputs/M1_Dataset_EDA"
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 sns.set_theme(style="whitegrid")
 plt.rcParams.update({"font.sans-serif": "Arial", "font.size": 10})
@@ -42,151 +38,208 @@ COLUMN_NAMES = [
     'readmitted'
 ]
 
-def load_and_prepare_data():
-    """Loads dataset, handles '?' as NaN, and derives binary Readmission_30_Days."""
-    with open(DATASET_PATH, "r", encoding="utf-8", errors="ignore") as f:
-        first_line = f.readline()
+# ============================================================
+# 4. LOAD DATASET
+# ============================================================
+print("=" * 60)
+print("VITALSIGN - EXPLORATORY DATA ANALYSIS (EDA) (M1)")
+print("=" * 60)
 
-    if "readmitted" in first_line or "encounter_id" in first_line:
-        df = pd.read_csv(DATASET_PATH)
-    else:
-        df = pd.read_csv(DATASET_PATH, header=None, names=COLUMN_NAMES)
+with open(DATASET_PATH, "r", encoding="utf-8", errors="ignore") as f:
+    first_line = f.readline()
 
-    df = df.replace("?", np.nan)
+if "readmitted" in first_line or "encounter_id" in first_line:
+    df = pd.read_csv(DATASET_PATH)
+else:
+    df = pd.read_csv(DATASET_PATH, header=None, names=COLUMN_NAMES)
 
-    # Create binary target Readmission_30_Days
-    # <30 = 1 (readmitted within 30 days)
-    # >30 / NO = 0 (no readmission within 30 days)
-    df["Readmission_30_Days"] = (
-        df["readmitted"].astype(str).str.strip().eq("<30").astype(int)
-    )
-    return df
+# Create a clean working copy
+data = df.copy()
 
-def detect_outliers_iqr(df, num_cols):
-    """Detects outliers using the standard Interquartile Range (IQR) method."""
-    print("\n--- IQR-BASED OUTLIER DETECTION ---")
-    outlier_summary = []
-    for col in num_cols:
-        q1 = df[col].quantile(0.25)
-        q3 = df[col].quantile(0.75)
-        iqr = q3 - q1
-        lower_bound = q1 - 1.5 * iqr
-        upper_bound = q3 + 1.5 * iqr
-        outliers = df[(df[col] < lower_bound) | (df[col] > upper_bound)]
-        outlier_summary.append({
-            "Feature": col,
-            "Q1": round(q1, 2),
-            "Q3": round(q3, 2),
-            "IQR": round(iqr, 2),
-            "Lower_Bound": round(lower_bound, 2),
-            "Upper_Bound": round(upper_bound, 2),
-            "Outlier_Count": len(outliers),
-            "Outlier_Percentage": round(len(outliers) / len(df) * 100, 2)
-        })
-        print(f"  {col:<22}: {len(outliers):5d} outliers ({len(outliers)/len(df)*100:5.2f}%) [Limits: {lower_bound:.1f} to {upper_bound:.1f}]")
-    return pd.DataFrame(outlier_summary)
+# ============================================================
+# 5. DATA PREPROCESSING (TARGET & MISSING VALUES)
+# ============================================================
+data = data.replace("?", np.nan)
 
-def main():
-    print("=" * 70)
-    print("VITALSIGN: COMPREHENSIVE EXPLORATORY DATA ANALYSIS (EDA)")
-    print("=" * 70)
+# Create binary 30-day readmission target: <30 -> 1, >30 or NO -> 0
+data['Readmission_30_Days'] = (data['readmitted'] == '<30').astype(int)
 
-    df = load_and_prepare_data()
-    print(f"Dataset Loaded: {df.shape[0]:,} Rows, {df.shape[1]} Columns")
+# ============================================================
+# 6. MODEL / ANALYSIS & VISUALIZATION GENERATION
+# ============================================================
 
-    # 1. TARGET ANALYSIS: Readmission_30_Days
-    print("\n[1] TARGET DISTRIBUTION (Readmission_30_Days):")
-    target_counts = df["Readmission_30_Days"].value_counts()
-    for val, count in target_counts.items():
-        label = "Readmitted <30 Days (Class 1)" if val == 1 else "Not Readmitted / >30 Days (Class 0)"
-        print(f"    {label}: {count:,} ({count/len(df)*100:.2f}%)")
+# 1. 30-Day Readmission Distribution
+print("\n[1] Generating 30-Day Readmission Distribution Plot...")
+plt.figure(figsize=(7, 5))
+counts = data['Readmission_30_Days'].value_counts()
+ax = sns.barplot(x=counts.index, y=counts.values, hue=counts.index, palette=["#3b82f6", "#ef4444"], legend=False)
+plt.title("30-Day Readmission Distribution", fontsize=13, fontweight="bold")
+plt.xlabel("Readmission Class (0: No/<30d, 1: Readmitted <30d)", fontsize=11)
+plt.ylabel("Number of Encounters", fontsize=11)
+plt.xticks([0, 1], ["Not Readmitted (0)", "Readmitted <30d (1)"])
+for p in ax.patches:
+    ax.annotate(f"{int(p.get_height()):,}", (p.get_x() + p.get_width() / 2., p.get_height() / 2),
+                ha='center', va='center', color='white', fontweight='bold', fontsize=11)
+plt.tight_layout()
+plt.savefig(os.path.join(OUTPUT_FOLDER, "Readmission_Distribution.png"), dpi=300)
+plt.close()
 
-    fig, ax = plt.subplots(figsize=(7, 5))
-    bars = ax.bar(["Class 0 (>30d / NO)", "Class 1 (<30d Readmit)"], target_counts.values, color=["#2563eb", "#dc2626"], width=0.55)
-    ax.set_title("VitalSign: 30-Day Readmission Target Distribution", fontsize=12, fontweight="bold", pad=12)
-    ax.set_ylabel("Patient Encounters", fontweight="bold")
-    for bar in bars:
-        h = bar.get_height()
-        ax.annotate(f"{h:,}\n({h/len(df)*100:.1f}%)", xy=(bar.get_x() + bar.get_width() / 2, h),
-                    xytext=(0, 4), textcoords="offset points", ha='center', va='bottom', fontsize=10, weight='bold')
-    plt.savefig(OUTPUT_DIR / "Target_Distribution.png", dpi=200, bbox_inches="tight")
-    plt.close()
-    print(f"[OK] Saved Target Distribution: {OUTPUT_DIR / 'Target_Distribution.png'}")
+# 2. Age Distribution of Patients
+print("[2] Generating Age Distribution of Patients...")
+plt.figure(figsize=(10, 5))
+order_age = ['[0-10)', '[10-20)', '[20-30)', '[30-40)', '[40-50)', '[50-60)', '[60-70)', '[70-80)', '[80-90)', '[90-100)']
+sns.countplot(data=data, x='age', order=order_age, hue='age', palette='Blues_r', legend=False)
+plt.title("Age Distribution of Patients", fontsize=13, fontweight="bold")
+plt.xlabel("Age Bracket (Years)", fontsize=11)
+plt.ylabel("Patient Count", fontsize=11)
+plt.xticks(rotation=25)
+plt.tight_layout()
+plt.savefig(os.path.join(OUTPUT_FOLDER, "Age_Distribution.png"), dpi=300)
+plt.close()
 
-    # 2. MISSING VALUES HEATMAP
-    print("\n[2] GENERATING MISSING VALUES HEATMAP...")
-    plt.figure(figsize=(12, 6))
-    sns.heatmap(df.isnull(), cbar=False, yticklabels=False, cmap="viridis")
-    plt.title("VitalSign Healthcare - Missing Values Heatmap", fontsize=12, fontweight="bold", pad=12)
-    plt.savefig(OUTPUT_DIR / "Missing_Values_Heatmap.png", dpi=200, bbox_inches="tight")
-    plt.close()
-    print(f"[OK] Saved Missingness Heatmap: {OUTPUT_DIR / 'Missing_Values_Heatmap.png'}")
+# 3. Time in Hospital Distribution
+print("[3] Generating Time in Hospital Distribution...")
+plt.figure(figsize=(8, 5))
+sns.histplot(data['time_in_hospital'], bins=14, kde=True, color="#2563eb")
+plt.title("Time in Hospital Distribution", fontsize=13, fontweight="bold")
+plt.xlabel("Length of Stay (Days)", fontsize=11)
+plt.ylabel("Frequency", fontsize=11)
+plt.tight_layout()
+plt.savefig(os.path.join(OUTPUT_FOLDER, "Time_in_Hospital_Distribution.png"), dpi=300)
+plt.close()
 
-    # 3. UNIVARIATE ANALYSIS: Categorical Features (Age Distribution)
-    print("\n[3] UNIVARIATE ANALYSIS (Age Distribution)...")
-    fig, ax = plt.subplots(figsize=(8, 5))
-    age_order = ['[0-10)', '[10-20)', '[20-30)', '[30-40)', '[40-50)', '[50-60)', '[60-70)', '[70-80)', '[80-90)', '[90-100)']
-    age_counts = df['age'].value_counts().reindex(age_order).fillna(0)
-    ax.bar(age_counts.index, age_counts.values, color="#0284c7")
-    ax.set_title("Patient Age Bracket Distribution", fontsize=12, fontweight="bold", pad=12)
-    ax.set_xlabel("Age Bracket", fontweight="bold")
-    ax.set_ylabel("Number of Encounters", fontweight="bold")
-    plt.xticks(rotation=30)
-    plt.savefig(OUTPUT_DIR / "Age_Distribution.png", dpi=200, bbox_inches="tight")
-    plt.close()
-    print(f"[OK] Saved Age Distribution: {OUTPUT_DIR / 'Age_Distribution.png'}")
+# 4. Number of Medications
+print("[4] Generating Number of Medications...")
+plt.figure(figsize=(8, 5))
+sns.histplot(data['num_medications'], bins=30, kde=True, color="#10b981")
+plt.title("Number of Medications", fontsize=13, fontweight="bold")
+plt.xlabel("Total Prescribed Medications", fontsize=11)
+plt.ylabel("Frequency", fontsize=11)
+plt.tight_layout()
+plt.savefig(os.path.join(OUTPUT_FOLDER, "Number_of_Medications.png"), dpi=300)
+plt.close()
 
-    # 4. UNIVARIATE ANALYSIS: Numerical Feature (Time in Hospital Boxplot)
-    print("\n[4] TIME IN HOSPITAL BOXPLOT...")
-    fig, ax = plt.subplots(figsize=(7, 4))
-    sns.boxplot(x=df['time_in_hospital'], color="#38bdf8", ax=ax)
-    ax.set_title("Distribution of Time in Hospital (Days)", fontsize=12, fontweight="bold", pad=12)
-    ax.set_xlabel("Length of Stay (Days)", fontweight="bold")
-    plt.savefig(OUTPUT_DIR / "Time_in_Hospital_Boxplot.png", dpi=200, bbox_inches="tight")
-    plt.close()
-    print(f"[OK] Saved Time in Hospital Boxplot: {OUTPUT_DIR / 'Time_in_Hospital_Boxplot.png'}")
+# 5. Number of Lab Procedures
+print("[5] Generating Number of Lab Procedures...")
+plt.figure(figsize=(8, 5))
+sns.histplot(data['num_lab_procedures'], bins=30, kde=True, color="#8b5cf6")
+plt.title("Number of Lab Procedures", fontsize=13, fontweight="bold")
+plt.xlabel("Number of Lab Tests Administered", fontsize=11)
+plt.ylabel("Frequency", fontsize=11)
+plt.tight_layout()
+plt.savefig(os.path.join(OUTPUT_FOLDER, "Number_of_Lab_Procedures.png"), dpi=300)
+plt.close()
 
-    # 5. BIVARIATE ANALYSIS: Feature vs Target (Inpatient Visits by Readmission Status)
-    print("\n[5] BIVARIATE ANALYSIS (Feature vs Target)...")
-    fig, ax = plt.subplots(figsize=(8, 5))
-    sns.boxplot(x='Readmission_30_Days', y='time_in_hospital', data=df, palette=["#3b82f6", "#ef4444"], ax=ax)
-    ax.set_title("Length of Stay vs 30-Day Readmission Status", fontsize=12, fontweight="bold", pad=12)
-    ax.set_xticklabels(["No Readmit / >30d (0)", "Readmitted <30d (1)"])
-    ax.set_xlabel("Clinical Readmission Outcome", fontweight="bold")
-    ax.set_ylabel("Time in Hospital (Days)", fontweight="bold")
-    plt.savefig(OUTPUT_DIR / "Feature_vs_Target.png", dpi=200, bbox_inches="tight")
-    plt.close()
-    print(f"[OK] Saved Feature vs Target: {OUTPUT_DIR / 'Feature_vs_Target.png'}")
+# 6. Number of Diagnoses
+print("[6] Generating Number of Diagnoses...")
+plt.figure(figsize=(8, 5))
+sns.countplot(data=data, x='number_diagnoses', hue='number_diagnoses', palette='Purples_r', legend=False)
+plt.title("Number of Diagnoses", fontsize=13, fontweight="bold")
+plt.xlabel("Number of Recorded Diagnoses", fontsize=11)
+plt.ylabel("Frequency", fontsize=11)
+plt.tight_layout()
+plt.savefig(os.path.join(OUTPUT_FOLDER, "Number_of_Diagnoses.png"), dpi=300)
+plt.close()
 
-    # 6. CORRELATION MATRIX & HEATMAP
-    print("\n[6] CORRELATION ANALYSIS...")
-    num_cols = ['time_in_hospital', 'num_lab_procedures', 'num_procedures', 'num_medications',
-                'number_outpatient', 'number_emergency', 'number_inpatient', 'number_diagnoses', 'Readmission_30_Days']
-    corr = df[num_cols].corr()
+# 7. Gender Distribution
+print("[7] Generating Gender Distribution...")
+plt.figure(figsize=(6, 5))
+sns.countplot(data=data, x='gender', hue='gender', palette=['#3b82f6', '#ec4899', '#6b7280'], legend=False)
+plt.title("Gender Distribution", fontsize=13, fontweight="bold")
+plt.xlabel("Patient Gender", fontsize=11)
+plt.ylabel("Frequency", fontsize=11)
+plt.tight_layout()
+plt.savefig(os.path.join(OUTPUT_FOLDER, "Gender_Distribution.png"), dpi=300)
+plt.close()
 
-    fig, ax = plt.subplots(figsize=(9, 7))
-    sns.heatmap(corr, annot=True, fmt=".2f", cmap="Blues", square=True, ax=ax, cbar_kws={"shrink": 0.8})
-    ax.set_title("Correlation Heatmap of Key Clinical Metrics", fontsize=12, fontweight="bold", pad=12)
-    plt.savefig(OUTPUT_DIR / "Correlation_Heatmap.png", dpi=200, bbox_inches="tight")
-    plt.close()
-    print(f"[OK] Saved Correlation Heatmap: {OUTPUT_DIR / 'Correlation_Heatmap.png'}")
+# 8. Race Distribution
+print("[8] Generating Race Distribution...")
+plt.figure(figsize=(9, 5))
+race_counts = data['race'].fillna('Missing').value_counts()
+sns.barplot(x=race_counts.index, y=race_counts.values, hue=race_counts.index, palette='crest', legend=False)
+plt.title("Race Distribution", fontsize=13, fontweight="bold")
+plt.xlabel("Race / Ethnicity", fontsize=11)
+plt.ylabel("Patient Count", fontsize=11)
+plt.xticks(rotation=20)
+plt.tight_layout()
+plt.savefig(os.path.join(OUTPUT_FOLDER, "Race_Distribution.png"), dpi=300)
+plt.close()
 
-    # 7. OUTLIER ANALYSIS (IQR)
-    outlier_cols = ['time_in_hospital', 'num_lab_procedures', 'num_procedures', 'num_medications', 'number_inpatient']
-    detect_outliers_iqr(df, outlier_cols)
+# 9. Admission Type Distribution
+print("[9] Generating Admission Type Distribution...")
+plt.figure(figsize=(8, 5))
+sns.countplot(data=data, x='admission_type_id', hue='admission_type_id', palette='Spectral', legend=False)
+plt.title("Admission Type Distribution", fontsize=13, fontweight="bold")
+plt.xlabel("Admission Type ID (1:Emergency, 2:Urgent, 3:Elective)", fontsize=11)
+plt.ylabel("Frequency", fontsize=11)
+plt.tight_layout()
+plt.savefig(os.path.join(OUTPUT_FOLDER, "Admission_Type_Distribution.png"), dpi=300)
+plt.close()
 
-    # 8. PAIR PLOT (Sampled subset for high efficiency)
-    print("\n[7] GENERATING SAMPLED PAIRPLOT (1,000 Sampled Encounters)...")
-    sample_df = df[['time_in_hospital', 'num_medications', 'num_lab_procedures', 'Readmission_30_Days']].dropna().sample(n=1000, random_state=42)
-    pairplot_fig = sns.pairplot(sample_df, hue='Readmission_30_Days', palette={0: "#2563eb", 1: "#dc2626"}, markers=["o", "s"], plot_kws={"alpha": 0.6})
-    pairplot_fig.fig.suptitle("Pairplot of Clinical Features by Readmission Status (Sample n=1,000)", y=1.02, fontsize=12, fontweight="bold")
-    pairplot_fig.savefig(OUTPUT_DIR / "Pairplot.png", dpi=200, bbox_inches="tight")
-    plt.close()
-    print(f"[OK] Saved Sampled Pairplot: {OUTPUT_DIR / 'Pairplot.png'}")
+# 10. Boxplots
+print("[10] Generating Numerical Boxplots...")
+plt.figure(figsize=(12, 6))
+num_box_cols = ['time_in_hospital', 'num_procedures', 'number_diagnoses', 'number_inpatient']
+data[num_box_cols].plot(kind='box', subplots=True, layout=(1, 4), figsize=(12, 5), patch_artist=True)
+plt.suptitle("Clinical Workload Feature Boxplots", fontsize=13, fontweight="bold")
+plt.tight_layout()
+plt.savefig(os.path.join(OUTPUT_FOLDER, "Boxplots.png"), dpi=300)
+plt.close()
 
-    print("\n" + "=" * 70)
-    print("EDA ANALYSIS COMPLETED SUCCESSFULLY. ALL GRAPHS SAVED.")
-    print("=" * 70)
+# 11. Correlation Heatmap
+print("[11] Generating Correlation Heatmap...")
+corr_features = [
+    'time_in_hospital', 'num_lab_procedures', 'num_procedures',
+    'num_medications', 'number_inpatient', 'number_emergency',
+    'number_diagnoses', 'Readmission_30_Days'
+]
+corr_matrix = data[corr_features].corr()
+plt.figure(figsize=(9, 7))
+sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm", cbar=True, square=True)
+plt.title("Clinical Feature Correlation Heatmap", fontsize=13, fontweight="bold")
+plt.tight_layout()
+plt.savefig(os.path.join(OUTPUT_FOLDER, "Correlation_Heatmap.png"), dpi=300)
+plt.close()
 
-if __name__ == "__main__":
-    main()
+# 12. Missing-Value Visualization
+print("[12] Generating Missing Values Visualization...")
+missing_cnt = data.isnull().sum()[data.isnull().sum() > 0].sort_values(ascending=False)
+plt.figure(figsize=(9, 5))
+sns.barplot(x=missing_cnt.values, y=missing_cnt.index, hue=missing_cnt.index, palette='flare', legend=False)
+plt.title("Missing Values per Clinical Attribute", fontsize=13, fontweight="bold")
+plt.xlabel("Number of Missing Records", fontsize=11)
+plt.tight_layout()
+plt.savefig(os.path.join(OUTPUT_FOLDER, "Missing_Values_Visualization.png"), dpi=300)
+plt.close()
+
+# 13. Feature vs Target Plots
+print("[13] Generating Feature vs Target Plots...")
+plt.figure(figsize=(8, 5))
+sns.boxplot(x='Readmission_30_Days', y='time_in_hospital', data=data, hue='Readmission_30_Days',
+            palette=["#3b82f6", "#ef4444"], legend=False)
+plt.title("Hospital Stay Duration vs 30-Day Readmission", fontsize=13, fontweight="bold")
+plt.xlabel("Readmission Class", fontsize=11)
+plt.ylabel("Time in Hospital (Days)", fontsize=11)
+plt.xticks([0, 1], ["Not Readmitted (0)", "Readmitted <30d (1)"])
+plt.tight_layout()
+plt.savefig(os.path.join(OUTPUT_FOLDER, "Feature_vs_Target.png"), dpi=300)
+plt.close()
+
+# ============================================================
+# 7. EVALUATION / SUMMARY
+# ============================================================
+readm_rate = (data['Readmission_30_Days'].mean()) * 100
+print(f"\nReadmission Rate (<30 Days): {readm_rate:.2f}%")
+print(f"Total Evaluated Features:    {len(corr_features)}")
+
+# ============================================================
+# 8. SAVE RESULTS
+# ============================================================
+print(f"[OK] All 13 exploratory plots saved successfully to: {OUTPUT_FOLDER}")
+
+# ============================================================
+# 9. FINAL OUTPUT
+# ============================================================
+print("=" * 60)
+print("VITALSIGN: EDA ANALYSIS COMPLETED SUCCESSFULLY")
+print("=" * 60)

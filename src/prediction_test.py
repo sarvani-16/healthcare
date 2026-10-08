@@ -38,7 +38,8 @@ COLUMN_NAMES = [
 
 DROP_COLUMNS = [
     'encounter_id', 'patient_nbr', 'readmitted',
-    'weight', 'payer_code', 'medical_specialty'
+    'weight', 'payer_code', 'medical_specialty',
+    'diag_1', 'diag_2', 'diag_3'
 ]
 
 def load_data():

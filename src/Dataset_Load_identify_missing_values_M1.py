@@ -1,27 +1,24 @@
-"""
-=============================================================================
-VitalSign / HealthcarePrediction
-Module 1: Dataset Loading & Missing Value Identification
-File: Dataset_Load_identify_missing_values_M1.py
-Dataset: UCI Diabetes 130-US Hospitals (diabetic_data_50000.csv)
-=============================================================================
-"""
-
+# ============================================================
+# 1. IMPORT LIBRARIES
+# ============================================================
 import os
-from pathlib import Path
 import pandas as pd
 import numpy as np
-
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Setup Paths
-BASE_DIR = Path(__file__).resolve().parent.parent
-DATASET_PATH = BASE_DIR / "dataset" / "diabetic_data_50000.csv"
-OUTPUT_DIR = BASE_DIR / "outputs" / "VitalSign_EDA_Analysis"
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+# ============================================================
+# 2. DATASET PATH
+# ============================================================
+DATASET_PATH = r"C:/Users/Manepalli Sarvani/PycharmProjects/Healthcare/dataset/diabetic_data_50000.csv"
+
+# ============================================================
+# 3. OUTPUT FOLDER
+# ============================================================
+OUTPUT_FOLDER = r"C:/Users/Manepalli Sarvani/PycharmProjects/Healthcare/outputs/M1_Dataset_EDA"
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 COLUMN_NAMES = [
     'encounter_id', 'patient_nbr', 'race', 'gender', 'age', 'weight',
@@ -38,76 +35,84 @@ COLUMN_NAMES = [
     'readmitted'
 ]
 
-def load_dataset():
-    """Loads the 50,000 healthcare dataset records and maps '?' to NaN."""
-    with open(DATASET_PATH, "r", encoding="utf-8", errors="ignore") as f:
-        first_line = f.readline()
+# ============================================================
+# 4. LOAD DATASET
+# ============================================================
+print("=" * 60)
+print("VITALSIGN - MISSING VALUE & INTEGRITY ANALYSIS (M1)")
+print("=" * 60)
 
-    if "readmitted" in first_line or "encounter_id" in first_line:
-        df = pd.read_csv(DATASET_PATH)
-    else:
-        df = pd.read_csv(DATASET_PATH, header=None, names=COLUMN_NAMES)
+with open(DATASET_PATH, "r", encoding="utf-8", errors="ignore") as f:
+    first_line = f.readline()
 
-    df = df.replace("?", np.nan)
-    return df
+if "readmitted" in first_line or "encounter_id" in first_line:
+    df = pd.read_csv(DATASET_PATH)
+else:
+    df = pd.read_csv(DATASET_PATH, header=None, names=COLUMN_NAMES)
 
-def main():
-    print("=" * 70)
-    print("VITALSIGN: DATASET LOAD & IDENTIFY MISSING VALUES (M1)")
-    print("=" * 70)
+# Create a copy so the original dataset is never modified
+data = df.copy()
 
-    # 1. Load Dataset
-    df = load_dataset()
-    print(f"\n[1] DATASET LOADED: {df.shape[0]:,} Rows, {df.shape[1]} Columns")
+# ============================================================
+# 5. DATA PREPROCESSING (REPLACE '?' WITH NaN)
+# ============================================================
+# In UCI Diabetes data, missing values are denoted by '?'
+data = data.replace("?", np.nan)
 
-    # First 5 rows
-    print("\n--- First 5 Rows ---")
-    print(df.head(5))
+# Duplicate records check
+duplicate_count = int(data.duplicated().sum())
 
-    # Display 6 columns subset
-    print("\n--- Sample 6 Clinical Columns ---")
-    print(df.iloc[:5, 2:8])
+# ============================================================
+# 6. MODEL / ANALYSIS
+# ============================================================
+missing_series = data.isnull().sum()
+missing_pct_series = (missing_series / len(data)) * 100
 
-    # 2. Missing values per column
-    missing_counts = df.isnull().sum()
-    total_missing = missing_counts.sum()
-    missing_pct = (missing_counts / len(df)) * 100
+missing_df = pd.DataFrame({
+    'Column_Name': data.columns,
+    'Missing_Count': missing_series.values,
+    'Missing_Percentage': missing_pct_series.values.round(2)
+})
 
-    missing_df = pd.DataFrame({
-        "Column": df.columns,
-        "Missing_Count": missing_counts.values,
-        "Missing_Percentage": missing_pct.round(2).values
-    })
+# Filter columns that have missing values and sort descending
+cols_with_missing = missing_df[missing_df['Missing_Count'] > 0].sort_values(
+    by='Missing_Count', ascending=False
+)
 
-    print("\n[2] MISSING VALUES ANALYSIS:")
-    print(f"    Total Missing Values in Dataset: {total_missing:,}")
-    print("\n--- Columns Containing Missing Values ---")
-    cols_with_missing = missing_df[missing_df["Missing_Count"] > 0].sort_values(by="Missing_Count", ascending=False)
-    print(cols_with_missing.to_string(index=False))
+total_missing = int(missing_series.sum())
+print(f"Total Missing Values across all cells: {total_missing:,}")
+print(f"Total Duplicate Records: {duplicate_count}")
+print("\n--- COLUMNS WITH MISSING VALUES ---")
+print(cols_with_missing.to_string(index=False))
 
-    # Save summary CSV
-    summary_csv = OUTPUT_DIR / "Missing_Values_Summary.csv"
-    missing_df.to_csv(summary_csv, index=False)
-    print(f"\n[OK] Saved Missing Values Summary: {summary_csv}")
+# ============================================================
+# 7. EVALUATION / VISUALIZATION
+# ============================================================
+# Generate Missing Values Heatmap (sample of 1,000 encounters for clear rendering)
+plt.figure(figsize=(12, 6))
+sample_missing = data.sample(n=min(1000, len(data)), random_state=42).isnull()
+sns.heatmap(sample_missing, cbar=True, yticklabels=False, cmap="viridis")
+plt.title("Missing Values Heatmap (Sampled 1,000 Encounters)", fontsize=14, fontweight="bold")
+plt.xlabel("Dataset Attributes", fontsize=11)
+plt.ylabel("Hospital Encounters", fontsize=11)
+plt.tight_layout()
 
-    # 3. Detect duplicate rows
-    duplicate_rows = df[df.duplicated()]
-    print(f"\n[3] DUPLICATE ROWS ANALYSIS:")
-    print(f"    Total Duplicate Rows Detected: {len(duplicate_rows)}")
+heatmap_path = os.path.join(OUTPUT_FOLDER, "Missing_Values_Heatmap.png")
+plt.savefig(heatmap_path, dpi=300)
+plt.close()
 
-    # 4. Generate Missingness Heatmap
-    print("\n[4] GENERATING MISSING VALUES HEATMAP...")
-    plt.figure(figsize=(12, 6))
-    sns.heatmap(df.isnull(), cbar=False, yticklabels=False, cmap="viridis")
-    plt.title("VitalSign Healthcare - Missing Values Heatmap (50,000 Records)", fontsize=13, fontweight="bold", pad=12)
-    plt.xlabel("Dataset Attributes", fontweight="bold")
-    plt.ylabel("Inpatient Records (50k)", fontweight="bold")
+# ============================================================
+# 8. SAVE RESULTS
+# ============================================================
+summary_csv_path = os.path.join(OUTPUT_FOLDER, "Missing_Values_Summary.csv")
+cols_with_missing.to_csv(summary_csv_path, index=False)
 
-    heatmap_path = OUTPUT_DIR / "Missing_Values_Heatmap.png"
-    plt.savefig(heatmap_path, dpi=200, bbox_inches="tight")
-    plt.close()
-    print(f"[OK] Saved Missingness Heatmap: {heatmap_path}")
-    print("=" * 70)
+print(f"\n[OK] Missing values summary CSV saved to: {summary_csv_path}")
+print(f"[OK] Missing values heatmap plot saved to: {heatmap_path}")
 
-if __name__ == "__main__":
-    main()
+# ============================================================
+# 9. FINAL OUTPUT
+# ============================================================
+print("=" * 60)
+print("VITALSIGN: MISSING VALUES ANALYSIS COMPLETED")
+print("=" * 60)

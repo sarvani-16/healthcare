@@ -1,0 +1,14 @@
+VITALSIGN MODEL MONITORING AUDIT SUMMARY
+============================================================
+
+Total Dataset Rows                 : 50000
+Total Attributes                   : 50
+Missing Cells Percentage           : 7.56%
+Ground Truth Class 1 Rate          : 11.49%
+Test Batch Encounters              : 10000
+Predicted High Risk Rate           : 32.87%
+Mean Readmission Probability       : 0.4523
+Test Accuracy                      : 0.6798
+Test Precision                     : 0.1877
+Test Recall                        : 0.5370
+Test F1-Score                      : 0.2782

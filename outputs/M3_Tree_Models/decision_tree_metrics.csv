@@ -1,0 +1,2 @@
+Model,Accuracy,Precision,Recall,F1_Score,ROC_AUC
+"Decision Tree (max_depth=10, balanced)",0.5994,0.1614,0.5927,0.2537,0.6157

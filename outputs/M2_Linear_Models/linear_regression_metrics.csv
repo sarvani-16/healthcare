@@ -1,0 +1,2 @@
+Model,Target_Feature,MAE,MSE,RMSE,R2_Score
+Linear Regression (OLS),time_in_hospital,2.0459,7.0947,2.6636,0.2575

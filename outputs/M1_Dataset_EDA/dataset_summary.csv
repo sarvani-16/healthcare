@@ -1,0 +1,7 @@
+Metric,Value
+Total Encounters (Rows),50000
+Total Features (Columns),50
+Numerical Features Count,13
+Categorical Features Count,37
+Target Column,readmitted
+Duplicate Encounters,0

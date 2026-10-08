@@ -1,0 +1,7 @@
+Method,Feature,Original_Missing,Remaining_Rows,Data_Loss_Percent,Strategy_Type
+Listwise Row Deletion,All Demo Features,21503,29756,40.49,Deletion
+Mean Imputation,num_lab_procedures,2500,50000,0.0,Statistical Imputation
+Median Imputation,num_lab_procedures,2500,50000,0.0,Statistical Imputation
+Most Frequent (Mode),race,1257,50000,0.0,Categorical Imputation
+Constant Flag Imputation,medical_specialty,17746,50000,0.0,Domain Heuristic
+Missing Indicator Flag,num_lab_procedures_was_missing,2500,50000,0.0,Binary Indicator
